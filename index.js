@@ -3,7 +3,7 @@ var app = require('express')();
 var http = require('http').Server(app);
 var io = require('socket.io')(http);
 
-app.get('/', function(req, res){
+app.get('/', function(req, res) {
   res.sendFile(__dirname + '/index.html');
 });
 
@@ -11,22 +11,24 @@ app.get('/chattr.html', function(req, res) {
   res.sendFile(__dirname + "/chattr.html");
 });
 
-io.on('connection', function(socket){
-  console.log('connected');
-  socket.username = "null";
+// If user connects
+io.on('connection', function(socket) {
+  socket.username = "noname";
 
-  socket.on('chat message', function(msg){
-    console.log("message received: " + msg);
+  // If user sends a message
+  socket.on('chat message', function(msg) {
     io.emit('chat message', socket.username, msg);
   });
 
+  // If user changes username
   socket.on('username', function(username) {
+    io.emit('username change', socket.username, username);
     socket.username = username;
-    console.log(username, socket.username);
   });
 
-  socket.on('disconnect', function(){
-    console.log('user disconnected');
+  // If user disconnects
+  socket.on('disconnect', function() {
+    io.emit('client disconnect', socket.username);
   });
 });
 

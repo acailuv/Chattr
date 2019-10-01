@@ -1,7 +1,7 @@
-<!doctype html>
+<!DOCTYPE html>
 <html>
   <head>
-    <style>
+    <!-- <style>
       * { margin: 0; padding: 0; box-sizing: border-box; }
       body { font: 13px Helvetica, Arial; }
       form { background: #000; padding: 3px; position: fixed; bottom: 0; width: 100%; }
@@ -11,7 +11,7 @@
       #messages li { padding: 5px 10px; }
       #messages li:nth-child(odd) { background: #eee; }
       #messages { margin-bottom: 40px }
-    </style>
+    </style> -->
   </head>
   <body>
     <ul id="messages"></ul>
@@ -20,6 +20,7 @@
     </form>
     <script>
       $(function () {
+        // Send Button Listener
         $('#messageEntry').submit(function(e) {
           e.preventDefault();
           socket.emit('chat message', $('#m').val());
@@ -27,10 +28,21 @@
           return false;
         });
 
+        // If user sends message
         socket.on('chat message', function(username, msg) {
-          console.log(username);
-          $('#messages').append($('<li>').html('<b>' + username + '</b> ' + msg));
+          $('#messages').append($('<li>').text(username + ' => ' + msg));
           window.scrollTo(0, document.body.scrollHeight);
+        });
+
+        // If user changes username
+        socket.on('username change', function(oldUsername, newUsername) {
+          $('#messages').append($('<li>').html('<i><b>' + oldUsername + '</b>' + ' has changed his/her username to ' + '<b>' + newUsername + '</b></i>'));
+          window.scrollTo(0, document.body.scrollHeight);
+        });
+
+        // If user disconnects
+        socket.on('client disconnect', function(username) {
+          $('#messages').append($('<li>').html('<i><b>' + username + '</b>' + ' has gone offline.</i>'));
         });
       });
     </script>

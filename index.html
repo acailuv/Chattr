@@ -1,4 +1,4 @@
-<!doctype html>
+<!DOCTYPE html>
 
 <html>
   <head>
@@ -17,20 +17,21 @@
   </head>
 
   <body>
-    <button id="chatButton">Chattr!</button>
     <button id="usernameButton">Change Username</button>
+    <button id="roomButton">Change Room</button>
     <div id="canvas"></div>
     <script>
       $(function() {
-        $('#chatButton').click(function(e) {
-          e.preventDefault();
-          $('#canvas').load("chattr.html");
-        });
+        $('#canvas').load("chattr.html");
 
         $('#usernameButton').click(function(e) {
           e.preventDefault();
-          var newUsername = prompt('Change your username:');
+          var newUsername = prompt("Choose your username:");
           socket.emit('username', newUsername);
+        });
+
+        $('#roomButton').click(function(e) {
+          e.preventDefault();
         });
       });
     </script>
