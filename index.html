@@ -1,0 +1,38 @@
+<!doctype html>
+
+<html>
+  <head>
+    <title>Chattr!</title>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="https://code.jquery.com/jquery-1.11.1.js"></script>
+    <script>
+      // GLOBAL VARIABLES
+      var socket = io();
+    </script>
+    <style>
+      button {
+        margin-bottom: 16px;
+      }
+    </style>
+  </head>
+
+  <body>
+    <button id="chatButton">Chattr!</button>
+    <button id="usernameButton">Change Username</button>
+    <div id="canvas"></div>
+    <script>
+      $(function() {
+        $('#chatButton').click(function(e) {
+          e.preventDefault();
+          $('#canvas').load("chattr.html");
+        });
+
+        $('#usernameButton').click(function(e) {
+          e.preventDefault();
+          var newUsername = prompt('Change your username:');
+          socket.emit('username', newUsername);
+        });
+      });
+    </script>
+  </body>
+</html>
