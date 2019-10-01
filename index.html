@@ -19,6 +19,7 @@
   <body>
     <button id="usernameButton">Change Username</button>
     <button id="roomButton">Change Room</button>
+    <span id="currentRoom">Current Room: world</span>
     <div id="canvas"></div>
     <script>
       $(function() {
@@ -32,6 +33,9 @@
 
         $('#roomButton').click(function(e) {
           e.preventDefault();
+          var roomID = prompt("Insert Room ID:");
+          socket.emit('change room', roomID);
+          $('#currentRoom').text('Current Room: ' + roomID);
         });
       });
     </script>

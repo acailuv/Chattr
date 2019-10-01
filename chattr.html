@@ -44,6 +44,16 @@
         socket.on('client disconnect', function(username) {
           $('#messages').append($('<li>').html('<i><b>' + username + '</b>' + ' has gone offline.</i>'));
         });
+
+        // If user joins room
+        socket.on('room join', function(username) {
+          $('#messages').append($('<li>').html('<i><b>' + username + '</b>' + ' has joined the room.</i>'));
+        });
+
+        // If user leaves room
+        socket.on('room leave', function(username) {
+          $('#messages').append($('<li>').html('<i><b>' + username + '</b>' + ' has left the room.</i>'));
+        });
       });
     </script>
   </body>
