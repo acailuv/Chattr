@@ -1,22 +1,17 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <!-- <style>
-      * { margin: 0; padding: 0; box-sizing: border-box; }
-      body { font: 13px Helvetica, Arial; }
-      form { background: #000; padding: 3px; position: fixed; bottom: 0; width: 100%; }
-      form input { border: 0; padding: 10px; width: 90%; margin-right: .5%; }
-      form button { width: 9%; background: rgb(130, 224, 255); border: none; padding: 10px; }
-      #messages { list-style-type: none; margin: 0; padding: 0; }
-      #messages li { padding: 5px 10px; }
-      #messages li:nth-child(odd) { background: #eee; }
-      #messages { margin-bottom: 40px }
-    </style> -->
+    <!-- CSS HERE -->
+    <link href="node_modules/bootstrap/dist/css/bootstrap.css" rel="stylesheet" type="text/css">
+    <link href="node_modules/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet" type="text/css">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.0/css/all.css" integrity="sha384-lZN37f5QGtY3VHgisS14W3ExzMWZxybE1SJSEsQp9S+oqd12jhcu+A56Ebc1zFSJ" crossorigin="anonymous">
   </head>
   <body>
+    <p>Chat Log:</p>
     <ul id="messages"></ul>
     <form id="messageEntry">
-      <input id="m" autocomplete="off" /><button>Send</button>
+      <input class="border rounded-pill col-md-10" id="m" autocomplete="off" placeholder="Send a message...."/>
+      <button class="btn btn-success fa fa-paper-plane border rounded-pill col-md-1 container-fluid"> Send</button>
     </form>
     <script>
       $(function () {
@@ -29,8 +24,8 @@
         });
 
         // If user sends message
-        socket.on('chat message', function(username, msg) {
-          $('#messages').append($('<li>').text(username + ' => ' + msg));
+        socket.on('chat message', function(username, id, msg) {
+          $('#messages').append($('<li>').text(username + '@' + id + "> " + msg));
           window.scrollTo(0, document.body.scrollHeight);
         });
 

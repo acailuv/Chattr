@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <title>Chattr!</title>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="https://code.jquery.com/jquery-1.11.1.js"></script>
+    <script>
+      // GLOBAL VARIABLES
+      var socket = io();
+    </script>
+    <link href="node_modules/bootstrap/dist/css/bootstrap.css" rel="stylesheet" type="text/css">
+    <style>
+      /* FADEIN/OUT TEMPLATE */
+      .elementToFadeInAndOut {
+        color: lime;
+        -webkit-animation: fadeinout 1s infinite;
+        animation: fadeinout 1s infinite;
+      }
+
+      @-webkit-keyframes fadeinout {
+        100% { opacity: 1; }
+        50% { opacity: 0; }
+        0% { opacity: 1; }
+      }
+
+      @keyframes fadeinout {
+        100% { opacity: 0; }
+        0% { opacity: 1; }
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="container-fluid bg-dark text-white pt-16px" id="topDiv">
+      <div class="container-fluid col-sm">
+        <span style="font-family: 'Consolas', Courier, monospace; font-size: 36px; color: lime;">> Chattr!</span>
+        <span class="elementToFadeInAndOut" style="font-family: 'Consolas', Courier, monospace; font-size: 36px;">_</span>
+      </div>
+      <div class="container-fluid col-sm">
+        <button class="btn btn-success" id="usernameButton">Change Username</button>
+        <button class="btn btn-success" id="roomButton">Change Room</button><br>
+      </div>
+      <div class="container-fluid col-sm text-right">
+        <span>You are chatting as: </span>
+        <span style="color: lime;" id="currentUsername"></span>
+      </div>
+    </div>
+
+    <div class="row"
+      style="padding-left: 32px; padding-right:32px; padding-top: 32px;">
+      <div class="container-fluid bg-light text-black border rounded col-md-2"
+        style="margin-left: 16px; margin-right: 16px;">
+        <p>User(s) in Room:</p>
+        <ul id="onlineRoomUsers"></ul>
+        <p>Global Online User(s):</p>
+        <ul id="onlineUsers"></ul>
+      </div>
+  
+      <div class="container-fluid bg-light text-black border rounded col"
+        style="margin-left: 16px; margin-right: 16px;">
+        <span>Current Room: </span>
+        <span id="currentRoom" style="font-weight: bold;">world</span>
+        <div id="canvas"></div>
+      </div>
+    </div>
+
+    <script>
+      $(function() {
+        $('#canvas').load("chattr.html");
+
+        $('#usernameButton').click(function(e) {
+          e.preventDefault();
+          let newUsername = prompt("Choose your username:");
+          socket.emit('username change', newUsername);
+          socket.emit('username refresh', newUsername);
+          $('#currentUsername').text(newUsername + '@' + socket.id);
+        });
+
+        $('#roomButton').click(function(e) {
+          e.preventDefault();
+          var roomID = prompt("Insert Room ID:");
+          socket.emit('change room', roomID);
+          $('#messages').empty();
+          $('#messages').append($('<li>').html('<i>Joined room <b>' + roomID + '</b>.</i>'));
+          $('#currentRoom').text(roomID);
+        });
+
+        socket.on('pass online users', function(onlineUsers, usersInRoom) {
+          $('#onlineUsers').empty();
+          $('#onlineRoomUsers').empty();
+          for(let id in onlineUsers) {
+            $('#onlineUsers').append($('<li>').text(onlineUsers[id] + '@' + id));
+          }
+          for(let user in usersInRoom) {
+            $('#onlineRoomUsers').append($('<li>').text(onlineUsers[user.id] + '@' + user.id));
+          }
+        });
+
+        socket.on('user enter', function(id) {
+          let newUsername = prompt("Choose your username:");
+          socket.emit('username refresh', newUsername);
+          $('#currentUsername').text(newUsername + '@' + id);
+        });
+      });
+    </script>
+  </body>
+</html>
