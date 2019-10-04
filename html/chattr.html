@@ -5,10 +5,11 @@
     <link href="node_modules/bootstrap/dist/css/bootstrap.css" rel="stylesheet" type="text/css">
     <link href="node_modules/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet" type="text/css">
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.0/css/all.css" integrity="sha384-lZN37f5QGtY3VHgisS14W3ExzMWZxybE1SJSEsQp9S+oqd12jhcu+A56Ebc1zFSJ" crossorigin="anonymous">
+    <link rel="stylesheet" type="text/css" href="/css/chatbubble.css">
   </head>
   <body>
     <p>Chat Log:</p>
-    <ul id="messages"></ul>
+    <div id="messages"></div>
     <form id="messageEntry">
       <input class="border rounded-pill col-md-10" id="m" autocomplete="off" placeholder="Send a message...."/>
       <button class="btn btn-success fa fa-paper-plane border rounded-pill col-md-1 container-fluid"> Send</button>
@@ -25,7 +26,27 @@
 
         // If user sends message
         socket.on('chat message', function(username, id, msg) {
-          $('#messages').append($('<li>').text(username + '@' + id + "> " + msg));
+          console.log(socketId, id);
+          if (id == socketId) {
+            $('#messages').append(
+              $('<div class="speech-bubble right">')
+                .append([
+                  $('<span class="username"/>').text(username),
+                  $('<div style="border: 1px solid rgba(0,0,0,0.2);"/>'),
+                  $('<span class="content"/>').text(msg)
+                ])
+            );
+          } else {
+            $('#messages').append(
+              $('<div class="speech-bubble left">')
+                .append([
+                  $('<span class="username"/>').text(username),
+                  $('<div style="border: 1px solid rgba(0,0,0,0.2);"/>'),
+                  $('<span class="content"/>').text(msg)
+                ])
+            );
+          }
+          //$('#messages').append($('<li>').text(username + '@' + id + "> " + msg));
           window.scrollTo(0, document.body.scrollHeight);
         });
 

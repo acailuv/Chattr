@@ -8,6 +8,10 @@
     <script>
       // GLOBAL VARIABLES
       var socket = io();
+      var socketId;
+      socket.on('connect', function() {
+        socketId = socket.id;
+      });
     </script>
     <link href="node_modules/bootstrap/dist/css/bootstrap.css" rel="stylesheet" type="text/css">
     <style>
@@ -50,15 +54,15 @@
     <div class="row"
       style="padding-left: 32px; padding-right:32px; padding-top: 32px;">
       <div class="container-fluid bg-light text-black border rounded col-md-2"
-        style="margin-left: 16px; margin-right: 16px;">
-        <p>User(s) in Room:</p>
-        <ul id="onlineRoomUsers"></ul>
+        style="margin-right: 16px;">
+        <!-- <p>User(s) in Room:</p>
+        <ul id="onlineRoomUsers"></ul> -->
         <p>Global Online User(s):</p>
         <ul id="onlineUsers"></ul>
       </div>
   
       <div class="container-fluid bg-light text-black border rounded col"
-        style="margin-left: 16px; margin-right: 16px;">
+        style="margin-left: 16px;">
         <span>Current Room: </span>
         <span id="currentRoom" style="font-weight: bold;">world</span>
         <div id="canvas"></div>
