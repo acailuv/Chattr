@@ -1,0 +1,166 @@
+/* HEADER */
+/* .fade {
+    color: lime;
+    -webkit-animation: fadeinout 1s infinite;
+    animation: fadeinout 1s infinite;
+}
+
+@-webkit-keyframes fadeinout {
+    100% { opacity: 1; }
+    50% { opacity: 0; }
+    0% { opacity: 1; }
+}
+
+@keyframes fadeinout {
+    100% { opacity: 0; }
+    0% { opacity: 1; }
+}
+
+.header {
+    padding: 16px 0px 16px 0px;
+}
+
+.title {
+    font-family: 'Consolas', Courier, monospace;
+    font-size: 36px;
+    color: lime;
+} */
+
+/* CHATTING AREA */
+@keyframes fadein {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
+
+.speech-bubble {
+    padding: 10px 10px 10px 10px;
+    margin-bottom: 16px;
+    animation: fadein 1s;
+    white-space: pre-wrap;
+}
+
+.speech-bubble.right{
+	position: relative;
+    border-radius: .4em;
+    margin-left: 65%;
+}
+
+.speech-bubble.right:after {
+	content: '';
+	position: absolute;
+	right: 0;
+	top: 50%;
+	width: 0;
+	height: 0;
+	border: 15px solid transparent;
+	border-left-color: #28a745;
+    border-right: 0;
+    border-bottom: 0;
+	margin-top: -10px;
+	margin-right: -10px;
+}
+
+.speech-bubble.left{
+	position: relative;
+	background: #f8f9fa;
+    border-radius: .4em;
+    margin-right: 65%;
+}
+
+.speech-bubble.left:after {
+	content: '';
+	position: absolute;
+	left: 0;
+	top: 50%;
+	width: 0;
+	height: 0;
+	border: 15px solid transparent;
+	border-right-color: whitesmoke;
+	border-left: 0;
+	border-bottom: 0;
+	margin-top: -10px;
+	margin-left: -10px;
+}
+
+.userListContainer {
+    height: 870px;
+    padding: 16px;
+    overflow-y: scroll;
+}
+
+.messageContainer {
+    height: 870px;
+    padding: 16px;
+    overflow-y: scroll;
+}
+
+.messageForm {
+    position: fixed;
+    padding: 8px;
+    bottom: 0;
+}
+
+.username {
+    font-weight: bold;
+    font-size: 18px;
+    word-wrap: normal;
+}
+
+.content {
+    font-size: 14px;
+    word-wrap: normal;
+}
+
+.announcement {
+    background: lightgray;
+    border-radius: .4em;
+    text-align: center;
+    margin: 0px 35% 16px 35%;
+}
+
+/* FILE INPUT (EXPERIMENTAL) */
+.files input {
+    outline: 2px dashed #92b0b3;
+    outline-offset: -10px;
+    -webkit-transition: outline-offset .15s ease-in-out, background-color .15s linear;
+    transition: outline-offset .15s ease-in-out, background-color .15s linear;
+    padding: 120px 0px 85px 35%;
+    text-align: center !important;
+    margin: 0;
+    width: 100% !important;
+}
+.files input:focus{     outline: 2px dashed #92b0b3;  outline-offset: -10px;
+    -webkit-transition: outline-offset .15s ease-in-out, background-color .15s linear;
+    transition: outline-offset .15s ease-in-out, background-color .15s linear; border:1px solid #92b0b3;
+ }
+.files{position:relative}
+.files:after {  pointer-events: none;
+    position: absolute;
+    top: 60px;
+    left: 0;
+    width: 50px;
+    right: 0;
+    height: 56px;
+    content: "";
+    background-image: url(https://image.flaticon.com/icons/png/128/109/109612.png);
+    display: block;
+    margin: 0 auto;
+    background-size: 100%;
+    background-repeat: no-repeat;
+}
+.color input{ background-color:#f1f1f1;}
+.files:before {
+    position: absolute;
+    bottom: 0px;
+    left: 0;  pointer-events: none;
+    width: 100%;
+    right: 0;
+    height: 57px;
+    content: " or drag it here. ";
+    display: block;
+    margin: 0 auto;
+    color: #2ea591;
+    font-weight: 600;
+    text-transform: capitalize;
+    text-align: center;
+}
