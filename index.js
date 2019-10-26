@@ -59,13 +59,13 @@ io.on('connection', function(socket) {
 
     // Change Room
     socket.on('changeRoom', function(newRoom) {
+        // if room has password, put smth here:
+        // ...
+        // ...
         socket.to(socket.room).emit('leaveRoom', socket.username);
         socket.room = newRoom;
         socket.leaveAll();
         socket.join(socket.room);
-        // if room has password, put smth here:
-        // ...
-        // ...
         io.in(socket.room).emit('joinRoom', socket.username);
         io.in(socket.room).emit('refreshUserList', getUsernames(socket.room));
         socket.emit('refreshRoomName', socket.room);

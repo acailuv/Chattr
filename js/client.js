@@ -19,6 +19,11 @@ function changeRoom () {
     }
 }
 
+// "Confirm Password" functionality
+function confirmPassword(elem1, elem2) {
+    elem1.setCustomValidity(elem2.value != confirmation.value ? "Passwords do not match." : "");
+}
+
 $(document).ready(function() {
 
     // Initialize Tooltip

@@ -82,16 +82,9 @@
 	margin-left: -10px;
 }
 
-.userListContainer {
-    height: 870px;
+.container {
+    height: 900px;
     padding: 16px;
-    overflow-y: scroll;
-}
-
-.messageContainer {
-    height: 870px;
-    padding: 16px;
-    overflow-y: scroll;
 }
 
 .messageForm {

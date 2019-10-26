@@ -44,8 +44,8 @@
 
         <div class="container-fluid">
             <div class="row">
-                <div id="messages" class="messageContainer bg-secondary col-10"></div>
-                <div id="userListContainer" class="userListContainer bg-dark col-2">
+                <div id="messages" class="container bg-secondary col-10 overflow-auto"></div>
+                <div id="userListContainer" class="container bg-dark col-2 overflow-auto">
                     <div class="card text-center bg-secondary text-white">
                         <div class="card-body">
                             <h5 class="card-title">Current Room</h5>
@@ -57,7 +57,7 @@
                                 Create
                             </button>
                             <form class="dropdown-menu p-4"
-                                    oninput='confirmation.setCustomValidity(pwd.value != confirmation.value ? "Passwords do not match." : "")'>
+                                    oninput='confirmPassword(confirmation, pwd)'>
                                 <div class="form-group">
                                     <label for="roomID">Room ID:</label>
                                     <input type="text" class="form-control" id="roomIdOnCreate" placeholder="Chattr">
@@ -78,7 +78,7 @@
                                 Change
                             </button>
                             <form class="dropdown-menu p-4"
-                                    oninput='confirmation.setCustomValidity(pwd.value != confirmation.value ? "Passwords do not match." : "")'>
+                                    oninput='confirmPassword(confirmation, pwd)'>
                                 <div class="form-group">
                                     <label for="roomIdOnChange">Room ID:</label>
                                     <input type="text" class="form-control" id="roomID" placeholder="Chattr">
