@@ -90,6 +90,8 @@ io.on('connection', function(socket) {
     // Default values that will be replace when logging in.
     socket.username = "NoName";
     socket.room = "world";
+
+    // Welcoming message and stuff
     socket.join(socket.room);
     io.in(socket.room).emit('joinRoom', socket.username);
     io.in(socket.room).emit('refreshUserList', getUsernames(socket.room));
@@ -121,6 +123,31 @@ io.on('connection', function(socket) {
         io.in(socket.room).emit('joinRoom', socket.username);
         io.in(socket.room).emit('refreshUserList', getUsernames(socket.room));
         socket.emit('refreshRoomName', socket.room);
+    });
+    // -- Check Room Password
+    socket.on('checkRoomCredentials', function(roomId, password) {
+        let ROOM_FOUND = false;
+        let PASSWORD_AUTH = false;
+
+        query = `SELECT password
+            FROM rooms
+            WHERE room_id = "` + roomId + `"`;
+        db.query(query, function(err, result) {
+            if (err) throw err;
+
+            if (result.length == 0) {
+                ROOM_FOUND = false;
+            } else {
+                ROOM_FOUND = true;
+                let correctPassword = result[0].password;
+                if (password == correctPassword) {
+                    PASSWORD_AUTH = true;
+                } else {
+                    PASSWORD_AUTH = false;
+                }
+            }
+            socket.emit('authentication', ['ROOM_FOUND', 'PASSWORD_AUTH'], [ROOM_FOUND, PASSWORD_AUTH]);
+        });
     });
 
     // Disconnect

@@ -1,3 +1,6 @@
+var PASSWORD_AUTH = false;
+var ROOM_FOUND = false;
+
 // Change Room Button Listener
 // Plans for final product:
 // > when creating room, store password (if created) to database
@@ -10,25 +13,43 @@ function changeRoom (roomId, pwd) {
      * Query from database based on roomId.
      * If not found -> handling
      */
+    if (roomId.value == '') {
+        alert("Room ID cannot be empty!");
+        return false;
+    }
 
-    // To actually change room:
-    // socket.emit('changeRoom', newRoom);
-    // $('#messages').empty();
-    // // Get message from database here.
-    // // IF user wants to.
-    
+    socket.emit('checkRoomCredentials', roomId.value, pwd.value);
+
+    console.log(ROOM_FOUND, PASSWORD_AUTH);
+
+    if (ROOM_FOUND == false) {
+        alert("The specified Room ID cannot be found.");
+        return false;
+    }
+
+    if (PASSWORD_AUTH == false) {
+        alert("Wrong password.");
+        return false;
+    }
+
+    socket.emit('changeRoom', roomId.value);
+    $('#messages').empty();
+    $('#changeRoomModal').modal('hide');
+    // Get message from database here.
+    // IF user wants to.
+
 }
 
 // Create Room Button Listener
 function createRoom (roomId, pwd, confirmation) {
 
     if (pwd.value != confirmation.value) {
-        confirm("Passwords does not match. Please try again.");
+        alert("Passwords does not match. Please try again.");
         return false;
     }
 
     if (roomId.value == '') {
-        confirm("Room ID cannot be empty!");
+        alert("Room ID cannot be empty!");
         return false;
     }
 
@@ -63,14 +84,14 @@ $(document).ready(function() {
     let roomId = document.getElementById('roomIdOnCreate');
     let pwd = document.getElementById('roomPasswordOnCreate');
     let confirmation = document.getElementById('roomPasswordConfirmation');
-    $('form#createRoom').on('submit', function(e) {
+    $('button#createRoom').on('click', function(e) {
         createRoom(roomId, pwd, confirmation);
     });
 
     // Change Room Listener
     roomId = document.getElementById('roomIdOnChange');
     pwd = document.getElementById('roomPasswordOnChange');
-    $('form#changeRoom').on('submit', function(e) {
+    $('button#changeRoom').on('click', function(e) {
         changeRoom(roomId, pwd);
     });
 
@@ -134,6 +155,13 @@ $(document).ready(function() {
     // Disconnect
     socket.on('disconnect', function(username) {
         $('#messages').append($('<div class="announcement"/>').html('<i><b>' + username + '</b>' + ' has gone offline.</i>'));
+    });
+
+    // Authentication Flag Transfer
+    socket.on('authentication', function(authKey, flag) {
+        for (var i=0; i<authKey.length; i++) {
+            eval(authKey[i] + '=' + flag[i]);
+        }
     });
 
 });
