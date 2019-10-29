@@ -1,27 +1,46 @@
-// Change Name (DEBUG ONLY)
-// function changeName () {
-//     let newName = prompt("New Name:");
-//     socket.emit('changeUsername', newName);
-// }
-
-// Change Room (DEBUG ONLY)
+// Change Room Button Listener
 // Plans for final product:
 // > when creating room, store password (if created) to database
 // > when a user wants to change room, check database for that room
 //   and ask password if that room is pasworded.
-function changeRoom () {
-    let newRoom = prompt("New Room:");
-    if (newRoom != null) {
-        socket.emit('changeRoom', newRoom);
-        $('#messages').empty();
-        // Get message from database here.
-        // IF user wants to.
-    }
+function changeRoom (roomId, pwd) {
+
+    /**
+     * Change Room:
+     * Query from database based on roomId.
+     * If not found -> handling
+     */
+
+    // To actually change room:
+    // socket.emit('changeRoom', newRoom);
+    // $('#messages').empty();
+    // // Get message from database here.
+    // // IF user wants to.
+    
 }
 
-// "Confirm Password" functionality
-function confirmPassword(elem1, elem2) {
-    elem1.setCustomValidity(elem2.value != confirmation.value ? "Passwords do not match." : "");
+// Create Room Button Listener
+function createRoom (roomId, pwd, confirmation) {
+
+    if (pwd.value != confirmation.value) {
+        confirm("Passwords does not match. Please try again.");
+        return false;
+    }
+
+    if (roomId.value == '') {
+        confirm("Room ID cannot be empty!");
+        return false;
+    }
+
+    /**
+     * Create a room:
+     * > Check if room already exists (incl. handling).
+     * > Query to database -> (creatorID(user that created the room), roomName, password(if exists))
+     * > Put these [HERE]
+     */
+
+    socket.emit('changeRoom', newRoom);
+    $('#messages').empty();
 }
 
 $(document).ready(function() {
@@ -41,12 +60,19 @@ $(document).ready(function() {
     });
 
     // Create Room Listener
-    // Later...
-    // ...
+    let roomId = document.getElementById('roomIdOnCreate');
+    let pwd = document.getElementById('roomPasswordOnCreate');
+    let confirmation = document.getElementById('roomPasswordConfirmation');
+    $('form#createRoom').on('submit', function(e) {
+        createRoom(roomId, pwd, confirmation);
+    });
 
     // Change Room Listener
-    // Later...
-    // ...
+    roomId = document.getElementById('roomIdOnChange');
+    pwd = document.getElementById('roomPasswordOnChange');
+    $('form#changeRoom').on('submit', function(e) {
+        changeRoom(roomId, pwd);
+    });
 
     // Send Message
     socket.on('sendMessage', function(username, id, msg) {
@@ -95,7 +121,7 @@ $(document).ready(function() {
         $('#userList').empty();
         for (let i in usernames) {
             $('#userList').append([,
-                $('<li class="list-group-item fa fa-user bg-secondary"/>').text(' ' + usernames[i])
+                $('<li class="list-group-item fa fa-user bg-dark"/>').text(' ' + usernames[i])
             ]);
         }
     });

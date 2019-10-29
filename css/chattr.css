@@ -27,6 +27,10 @@
 } */
 
 /* CHATTING AREA */
+body {
+    background: #6c757d;
+}
+
 @keyframes fadein {
     from { opacity: 0; }
     to   { opacity: 1; }
@@ -83,7 +87,7 @@
 }
 
 .container {
-    height: 900px;
+    max-height: 89vh;
     padding: 16px;
 }
 

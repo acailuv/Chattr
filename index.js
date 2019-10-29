@@ -2,6 +2,48 @@ var express = require('express')
 var app = express();
 var http = require('http').Server(app);
 var io = require('socket.io')(http);
+var mysql = require('mysql');
+
+
+// Database Initialization
+var db = mysql.createConnection({
+    host: 'localhost',
+    user: 'root',
+    password: '',
+    database: 'chattr'
+});
+
+db.connect(function(err) {
+    if (err) throw err;
+
+    query = `CREATE TABLE IF NOT EXISTS chat_log (
+        user_id varchar(32) NOT NULL,
+        room_id varchar(32),
+        message LONGTEXT,
+        datetime DATETIME
+    )`;
+    db.query(query, function(err) {
+        if (err) throw err;
+    });
+
+    query = `CREATE TABLE IF NOT EXISTS rooms (
+        room_id varchar(32) NOT NULL,
+        password varchar(32),
+        PRIMARY KEY (room_id)
+    )`;
+    db.query(query, function(err) {
+        if (err) throw err;
+    });
+
+    query = `CREATE TABLE IF NOT EXISTS users (
+        user_id varchar(32) NOT NULL,
+        password varchar(32),
+        PRIMARY KEY (user_id)
+    )`;
+    db.query(query, function(err) {
+        if (err) throw err;
+    });
+});
 
 app.get('/', function(req, res) {
     res.sendFile(__dirname + '/html/index.html');
@@ -49,11 +91,21 @@ io.on('connection', function(socket) {
     socket.username = "NoName";
     socket.room = "world";
     socket.join(socket.room);
+    io.in(socket.room).emit('joinRoom', socket.username);
     io.in(socket.room).emit('refreshUserList', getUsernames(socket.room));
     socket.emit('refreshRoomName', socket.room);
 
     // Send Message
     socket.on('sendMessage', function(msg) {
+        query = `INSERT INTO chat_log VALUES (
+            "`+socket.username+`",
+            "`+socket.room+`",
+            "`+msg+`",
+            NOW()
+        );`;
+        db.query(query, function(err) {
+            if (err) throw err;
+        });
         io.in(socket.room).emit('sendMessage', socket.username, socket.id, msg);
     });
 
@@ -74,6 +126,7 @@ io.on('connection', function(socket) {
     // Disconnect
     socket.on('disconnect', function() {
         io.in(socket.room).emit('disconnect', socket.username);
+        io.in(socket.room).emit('refreshUserList', getUsernames(socket.room));
     });
 
     // Change Name (DEBUG ONLY)

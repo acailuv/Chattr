@@ -44,66 +44,100 @@
 
         <div class="container-fluid">
             <div class="row">
-                <div id="messages" class="container bg-secondary col-10 overflow-auto"></div>
-                <div id="userListContainer" class="container bg-dark col-2 overflow-auto">
-                    <div class="card text-center bg-secondary text-white">
+
+                <!-- Current Room and User List -->
+                <div id="userListContainer" class="container col-2 overflow-auto">
+                    <div class="card text-center bg-dark text-white">
                         <div class="card-body">
                             <h5 class="card-title">Current Room</h5>
                             <p id="roomName" class="card-text text-success"></p>
-                            <!-- <a href="#" class="btn btn-primary" onclick="changeRoom()">Change</a> -->
                         </div>
-                        <div class="btn-group dropdown">
-                            <button type="button" class="btn btn-success dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                Create
-                            </button>
-                            <form class="dropdown-menu p-4"
-                                    oninput='confirmPassword(confirmation, pwd)'>
-                                <div class="form-group">
-                                    <label for="roomID">Room ID:</label>
-                                    <input type="text" class="form-control" id="roomIdOnCreate" placeholder="Chattr">
+
+                        <!-- Create Room Button -->
+                        <button type="button"
+                            class="btn btn-success"
+                            data-toggle="modal"
+                            data-target="#createRoomModal"
+                            title="Create a new chatroom."
+                            id="createRoomButton">Create</button>
+                            <div class="modal fade" id="createRoomModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                                <div class="modal-dialog" role="document">
+                                    <div class="modal-content">
+                                        <div class="modal-header text-dark">
+                                            <h5 class="modal-title" id="createRoomModalLabel">Create a new chatroom</h5>
+                                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                <span aria-hidden="true">&times;</span>
+                                            </button>
+                                        </div>
+                                        <div class="modal-body text-dark">
+                                            <form id="createRoom">
+                                                <div class="form-group">
+                                                    <label for="roomIdOnCreate">Room ID</label>
+                                                    <input type="text" class="form-control" id="roomIdOnCreate" placeholder="Chattr" autocomplete="off">
+                                                </div>
+                                                <div class="form-group">
+                                                    <label for="roomPasswordOnCreate">Password (Optional)</label>
+                                                    <input name="new-password" type="password" class="form-control" id="roomPasswordOnCreate" placeholder="Password" autocomplete="off">
+                                                </div>
+                                                <div class="form-group">
+                                                    <label for="roomPassword">Confirm Password</label>
+                                                    <input name="new-password" type="password" class="form-control" id="roomPasswordConfirmation" placeholder="Password" autocomplete="off">
+                                                </div>
+                                                <button type="submit" class="btn btn-primary">Create</button>
+                                            </form>
+                                        </div>
+                                    </div>
                                 </div>
-                                <div class="form-group">
-                                    <label for="roomPassword">Password</label>
-                                    <input name="pwd" type="password" class="form-control" id="roomPasswordOnCreate" placeholder="Password">
+                            </div>
+
+                        <!-- Change Room Button -->
+                        <button type="button"
+                            class="btn btn-warning"
+                            data-toggle="modal"
+                            data-target="#changeRoomModal"
+                            title="Move to a new chatroom.">Change</button>
+                        <div class="modal fade" id="changeRoomModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                            <div class="modal-dialog" role="document">
+                                <div class="modal-content">
+                                    <div class="modal-header text-dark">
+                                        <h5 class="modal-title" id="changeRoomModalLabel">Move to a new chatroom</h5>
+                                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                            <span aria-hidden="true">&times;</span>
+                                        </button>
+                                    </div>
+                                    <div class="modal-body text-dark">
+                                        <form>
+                                            <div class="form-group">
+                                                <label for="roomIdOnChange">Room ID</label>
+                                                <input type="text" class="form-control" id="roomIdOnChange" placeholder="Chattr" autocomplete="off">
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="roomPasswordOnChange">Password (If Needed)</label>
+                                                <input name="current-passwordd" type="password" class="form-control" id="roomPasswordOnChange" placeholder="Password" autocomplete="off">
+                                            </div>
+                                            <div class="form-check">
+                                                <input type="checkbox" 
+                                                    class="form-check-input" 
+                                                    id="getMessageHistory"
+                                                    data-toggle="tooltip"
+                                                    data-placement="bottom"
+                                                    title="If checked, all messages from that room that are stored in the database will be loaded upon entry.">
+                                                <label class="form-check-label" for="getMessageHistory">
+                                                    Get Message History?
+                                                </label>
+                                            </div>
+                                            <br>
+                                            <button type="submit" class="btn btn-primary" id="changeRoomButton">Change Room</button>
+                                        </form>
+                                    </div>
                                 </div>
-                                <div class="form-group">
-                                    <label for="roomPassword">Confirm Password</label>
-                                    <input name="confirmation" type="password" class="form-control" id="roomPasswordConfirmation" placeholder="Password">
-                                </div>
-                                <button type="submit" class="btn btn-primary">Create</button>
-                            </form>
+                            </div>
                         </div>
-                        <div class="btn-group dropdown">
-                            <button type="button" class="btn btn-warning dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                Change
-                            </button>
-                            <form class="dropdown-menu p-4"
-                                    oninput='confirmPassword(confirmation, pwd)'>
-                                <div class="form-group">
-                                    <label for="roomIdOnChange">Room ID:</label>
-                                    <input type="text" class="form-control" id="roomID" placeholder="Chattr">
-                                </div>
-                                <div class="form-group">
-                                    <label for="roomPassword">Password (If Needed):</label>
-                                    <input name="pwd" type="password" class="form-control" id="roomPasswordOnChange" placeholder="Password">
-                                </div>
-                                <div class="form-check">
-                                    <input type="checkbox" 
-                                        class="form-check-input" 
-                                        id="getMessageHistory"
-                                        data-toggle="tooltip"
-                                        data-placement="bottom"
-                                        title="If checked, all messages from that room that are stored in the database will be loaded upon entry.">
-                                    <label class="form-check-label" for="getMessageHistory">
-                                        Get Message History?
-                                    </label>
-                                </div>
-                                <br>
-                                <button type="submit" class="btn btn-primary">Create</button>
-                            </form>
-                        </div>
+
                     </div>
-                    <div class="card text-center bg-secondary text-white" style="margin-top: 32px;">
+
+                    <!-- Online Users in Room -->
+                    <div class="card text-center bg-dark text-white" style="margin-top: 32px;">
                         <div class="card-body">
                             <h5 class="card-title">Online Users:</h5>
                         </div>
@@ -111,6 +145,7 @@
                         </ul>
                     </div>
                 </div>
+                <div id="messages" class="container col-10 overflow-auto"></div>
             </div>
         </div>
         
@@ -149,5 +184,6 @@
                 </div>
             </div>
         </div>
+
     </body>
 </html>
