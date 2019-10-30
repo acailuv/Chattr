@@ -153,14 +153,7 @@ io.on('connection', function(socket) {
     // Disconnect
     socket.on('disconnect', function() {
         io.in(socket.room).emit('disconnect', socket.username);
-        io.in(socket.room).emit('refreshUserList', getUsernames(socket.room));
     });
-
-    // Change Name (DEBUG ONLY)
-    // socket.on('changeUsername', function(newName) {
-    //     console.log("Name Change :: " + socket.username + ' -> ' + newName);
-    //     socket.username = newName;
-    // });
 
 });
 

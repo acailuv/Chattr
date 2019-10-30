@@ -155,6 +155,14 @@ $(document).ready(function() {
     // Disconnect
     socket.on('disconnect', function(username) {
         $('#messages').append($('<div class="announcement"/>').html('<i><b>' + username + '</b>' + ' has gone offline.</i>'));
+        
+        // Refreshing User List
+        $('#userList').empty();
+        for (let i in usernames) {
+            $('#userList').append([,
+                $('<li class="list-group-item fa fa-user bg-dark"/>').text(' ' + usernames[i])
+            ]);
+        }
     });
 
     // Authentication Flag Transfer
