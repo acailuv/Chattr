@@ -1,9 +1,8 @@
 // GLOBAL VARIABLES
 var socket = io();
-var sender;
+var clientId, clientUsername = "", clientRoom = "";
 socket.on('connect', function() {
-    sender = socket.username;
-    username = socket.username;
+    clientId = socket.id;
 });
 var delivery = new Delivery(socket);
 var PASSWORD_AUTH = false; // Correct password? (true/false)
@@ -12,44 +11,50 @@ var MESSAGE_HISTORY_BUFFER = []; // All the messages in the room (array)
 
 // More-than-once functions.
 // [?]: More-than-once functions are a set of code that are used more than once.
+
 // -- Send Message
 function sendMessageHandler(username, msg) {
     let $separator = $('<div style="border-top: 1px solid rgba(0,0,0,0.2);"/>');
-
-        if (username == sender) {
-            $('#messages').append(
-                $('<div class="speech-bubble right bg-success">').append([
-                    $('<div class="username"/>').text("You"),
-                    $separator,
-                    $('<div class="content"/>').text(msg)
-                ])
-            );
-        } else {
-            $('#messages').append(
-                $('<div class="speech-bubble left bg-light">').append([
-                    $('<div class="username"/>').text(username),
-                    $separator,
-                    $('<div class="content"/>').text(msg)
-                ])
-            );
-        }
-        let messages = document.getElementById('messages');
-        messages.scrollTo({
-            top: messages.scrollHeight,
-            behavior: 'smooth'
-        });
+    if (username == clientUsername) {
+        $('#messages').append(
+            $('<div class="speech-bubble right bg-success">').append([
+                $('<div class="username"/>').text("You"),
+                $separator,
+                $('<div class="content"/>').text(msg)
+            ])
+        );
+    } else {
+        $('#messages').append(
+            $('<div class="speech-bubble left bg-light">').append([
+                $('<div class="username"/>').text(username),
+                $separator,
+                $('<div class="content"/>').text(msg)
+            ])
+        );
+    }
+    let messages = document.getElementById('messages');
+    messages.scrollTo({
+        top: messages.scrollHeight,
+        behavior: 'smooth'
+    });
 }
-//---------- End of More-than-once functions
+
+//---------------------------------------------- End of More-than-once functions
 
 
 // Check Room Credentials from Server
 function checkRoomCredentials(roomId, pwd) {
     socket.emit('checkRoomCredentials', roomId.value, pwd.value);
-    console.log(ROOM_FOUND, PASSWORD_AUTH);
+}
+
+// Check Room availability from server
+function checkRoomAvailability(roomId) {
+    socket.emit('checkRoomAvailability', roomId.value);
+    console.log(ROOM_FOUND);
 }
 
 // Change Room
-function changeRoom (roomId, pwd) {
+function changeRoom (roomId) {
 
     if (roomId.value == '') {
         alert("Room ID cannot be empty!");
@@ -69,11 +74,8 @@ function changeRoom (roomId, pwd) {
     socket.emit('changeRoom', roomId.value);
 
     // Get message from database IF needed.
-    if (document.getElementById('getMessageHistory').checked) {
+    if (document.getElementById('getMessageHistory').checked == true) {
         socket.emit('getMessageHistory', roomId.value);
-        MESSAGE_HISTORY_BUFFER.forEach(chat => {
-            sendMessageHandler(chat.user_id, chat.message);
-        });
     }
 
     $('#changeRoomModal').modal('hide');
@@ -95,17 +97,20 @@ function createRoom (roomId, pwd, confirmation) {
         return false;
     }
 
-    /**
-     * Create a room:
-     * > Check if room already exists (incl. handling).
-     * > Query to database -> (creatorID(user that created the room), roomName, password(if exists))
-     * > Put these [HERE]
-     */
+    if (ROOM_FOUND == true) {
+        alert("Room ID has already been used.");
+        return false;
+    }
 
-    socket.emit('changeRoom', newRoom);
+    socket.emit('createRoom', roomId.value, confirmation.value);
+    socket.emit('changeRoom', roomId.value);
+
+    $('#createRoomModal').modal('hide');
     $('#messages').empty();
+    $('#roomIdOnCreate').val('');
+    $('#roomPasswordOnCreate').val('');
+    $('#roomPasswordConfirmation').val('');
 }
-
 
 // Start of JQuery
 $(document).ready(function() {
@@ -125,18 +130,22 @@ $(document).ready(function() {
     });
 
     // Create Room Listener
-    let roomId = document.getElementById('roomIdOnCreate');
-    let pwd = document.getElementById('roomPasswordOnCreate');
+    let roomIdOnCreate = document.getElementById('roomIdOnCreate');
+    let pwdOnCreate = document.getElementById('roomPasswordOnCreate');
     let confirmation = document.getElementById('roomPasswordConfirmation');
     $('button#createRoom').on('click', function(e) {
-        createRoom(roomId, pwd, confirmation);
+        createRoom(roomIdOnCreate, pwdOnCreate, confirmation);
     });
 
     // Change Room Listener
-    roomId = document.getElementById('roomIdOnChange');
-    pwd = document.getElementById('roomPasswordOnChange');
+    let roomIdOnChange = document.getElementById('roomIdOnChange');
     $('button#changeRoom').on('click', function(e) {
-        changeRoom(roomId, pwd);
+        changeRoom(roomIdOnChange);
+    });
+
+    // Sync Message Button Listener
+    $('#syncButton').on('click', function() {
+        socket.emit('getMessageHistory', clientRoom);
     });
 
     // Send Message
@@ -162,8 +171,8 @@ $(document).ready(function() {
     socket.on('refreshUserList', function(usernames) {
         $('#userList').empty();
         for (let i in usernames) {
-            $('#userList').append([,
-                $('<li class="list-group-item fa fa-user bg-dark"/>').text(' ' + usernames[i])
+            $('#userList').append([
+                $('<li class="list-group-item bg-dark" style="font-family: Consolas; font-size: 16px;">').html("<span class='fa fa-user'></span> " + usernames[i])
             ]);
         }
     });
@@ -171,38 +180,42 @@ $(document).ready(function() {
     // Refresh Room Name
     socket.on('refreshRoomName', function(currentRoom) {
         $('p#roomName').text(currentRoom);
+        clientRoom = currentRoom;
+
+        // IF you want real-time sync (even when refresh)
+        // socket.emit('getMessageHistory', clientRoom);
     });
 
     // Disconnect
     socket.on('disconnect', function(username) {
         $('#messages').append($('<div class="announcement"/>').html('<i><b>' + username + '</b>' + ' has gone offline.</i>'));
-        
-        // Refreshing User List
-        $('#userList').empty();
-        for (let i in usernames) {
-            $('#userList').append([,
-                $('<li class="list-group-item fa fa-user bg-dark"/>').text(' ' + usernames[i])
-            ]);
-        }
     });
 
-    // dataSend: Sending data to update client's variables.
+    // dataUpdate: Sending data to update client's variables.
     socket.on('dataUpdate', function(dataSet, valueSet) {
         for (var i=0; i<dataSet.length; i++) {
-            eval(dataSet[i] + ' = ' + valueSet[i]);
+            let evalString = dataSet[i] + ' = ' + valueSet[i];
+            // console.log('Evaluated ->', evalString);
+            eval(evalString);
         }
+    });
+    socket.on('setMessageHistory', function(messageHistory) {
+        MESSAGE_HISTORY_BUFFER = messageHistory;
+        MESSAGE_HISTORY_BUFFER.forEach(chat => {
+            sendMessageHandler(chat.user_id, chat.message);
+        });
     });
 
     // File Transfer
     delivery.on('delivery.connect',function(delivery){
         $("#submitUpload").click(function(evt){
+            evt.preventDefault();
             var file = $("#fileUpload")[0].files[0];
             delivery.send(file);
-            evt.preventDefault();
         });
     });
 
-    delivery.on('send.success',function(fileUID){
+    delivery.on('send.success',function(){
         alert("File transfer successful!");
         $('#fileUpload').val('');
         $('#uploadModal').modal('hide');

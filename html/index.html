@@ -27,16 +27,6 @@
             <span class="title">> Waiting for Homepage</span>
             <span class="title fade">_</span>
         </div> -->
-        <nav class="navbar navbar-expand-md navbar-dark bg-dark text-white">
-            <ul class="navbar-nav">
-                <li class="nav-item">
-                    <a class="nav-link" href="#" onclick="changeName()">Debug: Change Name</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="#" onclick="changeRoom()">Debug: Change Room</a>
-                </li>
-            </ul>
-        </nav>
 
         <div class="container-fluid">
             <div class="row">
@@ -66,18 +56,18 @@
                                             </button>
                                         </div>
                                         <div class="modal-body text-dark">
-                                            <form>
+                                            <form oninput="checkRoomAvailability(roomIdOnCreate);">
                                                 <div class="form-group">
                                                     <label for="roomIdOnCreate">Room ID</label>
                                                     <input type="text" class="form-control" id="roomIdOnCreate" placeholder="Chattr" autocomplete="off">
                                                 </div>
                                                 <div class="form-group">
                                                     <label for="roomPasswordOnCreate">Password (Optional)</label>
-                                                    <input name="new-password" type="password" class="form-control" id="roomPasswordOnCreate" placeholder="Password" autocomplete="off">
+                                                    <input type="password" class="form-control" id="roomPasswordOnCreate" placeholder="Password" autocomplete="off">
                                                 </div>
                                                 <div class="form-group">
                                                     <label for="roomPassword">Confirm Password</label>
-                                                    <input name="new-password" type="password" class="form-control" id="roomPasswordConfirmation" placeholder="Password" autocomplete="off">
+                                                    <input type="password" class="form-control" id="roomPasswordConfirmation" placeholder="Password" autocomplete="off">
                                                 </div>
                                                 <button type="button" class="btn btn-primary" id="createRoom">Create</button>
                                             </form>
@@ -109,7 +99,7 @@
                                             </div>
                                             <div class="form-group">
                                                 <label for="roomPasswordOnChange">Password (If Needed)</label>
-                                                <input name="current-password" type="password" class="form-control" id="roomPasswordOnChange" placeholder="Password" autocomplete="off">
+                                                <input type="password" class="form-control" id="roomPasswordOnChange" placeholder="Password" autocomplete="off">
                                             </div>
                                             <div class="form-check">
                                                 <input type="checkbox" 
@@ -129,6 +119,12 @@
                                 </div>
                             </div>
                         </div>
+
+                        <button type="button"
+                            class="btn btn-primary"
+                            id="syncButton">
+                            <span class="fa fa-sync-alt"></span> Sync Message
+                        </button>
 
                     </div>
 

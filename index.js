@@ -75,17 +75,26 @@ function printUsers(inRoom) {
 // Get all client in a room.
 function getUsernames(inRoom) {
     let usernames = [];
-    let clients = io.sockets.adapter.rooms[inRoom].sockets;
+    let room = io.sockets.adapter.rooms[inRoom];
 
-    for (let clientId in clients) {
+    if (room != undefined) {
+        let clients = room.sockets;
 
-        let clientSocket = io.sockets.connected[clientId];
-        usernames.push(clientSocket.username);
+        for (let clientId in clients) {
 
+            let clientSocket = io.sockets.connected[clientId];
+            usernames.push(clientSocket.username);
+
+        }
     }
 
     return usernames;
 }
+
+// More-than-once functions.
+// [?]: More-than-once functions are a set of code that are used more than once.
+
+//---------------------------------------------- End of More-than-once functions
 
 io.on('connection', function(socket) {
 
@@ -98,15 +107,17 @@ io.on('connection', function(socket) {
     io.in(socket.room).emit('joinRoom', socket.username);
     io.in(socket.room).emit('refreshUserList', getUsernames(socket.room));
     socket.emit('refreshRoomName', socket.room);
+    socket.emit('dataUpdate', ['clientUsername'], ['"' + socket.username + '"']);
 
     // Send Message
     socket.on('sendMessage', function(msg) {
-        query = `INSERT INTO chat_log VALUES (
-            "`+socket.username+`",
-            "`+socket.room+`",
-            "`+msg+`",
-            NOW()
-        );`;
+        query = `INSERT INTO chat_log
+            VALUES (
+                "`+socket.username+`",
+                "`+socket.room+`",
+                "`+msg+`",
+                NOW()
+            );`;
         db.query(query, function(err) {
             if (err) throw err;
         });
@@ -123,17 +134,27 @@ io.on('connection', function(socket) {
         io.in(socket.room).emit('refreshUserList', getUsernames(socket.room));
         socket.emit('refreshRoomName', socket.room);
     });
-    // -- Check Room Password
+    // -- Create New Room
+    socket.on('createRoom', function(roomId, pwd) {
+        query = `INSERT INTO rooms
+            VALUES (
+                "`+roomId+`",
+                "`+pwd+`"
+            );`;
+        db.query(query, function(err) {
+            if (err) throw err;
+        });
+    });
+    // -- Check Room Availability and Password
     socket.on('checkRoomCredentials', function(roomId, password) {
-        let ROOM_FOUND = false;
-        let PASSWORD_AUTH = false;
+        var ROOM_FOUND = false;
+        var PASSWORD_AUTH = false;
 
         query = `SELECT password
             FROM rooms
             WHERE room_id = "` + roomId + `"`;
         db.query(query, function(err, result) {
             if (err) throw err;
-
             if (result.length == 0) {
                 ROOM_FOUND = false;
             } else {
@@ -148,22 +169,46 @@ io.on('connection', function(socket) {
             socket.emit('dataUpdate', ['ROOM_FOUND', 'PASSWORD_AUTH'], [ROOM_FOUND, PASSWORD_AUTH]);
         });
     });
+    // -- Check Room Availability
+    socket.on('checkRoomAvailability', function(roomId) {
+        var ROOM_FOUND = false;
+
+        query = `SELECT *
+            FROM rooms
+            WHERE room_id = "` + roomId + `"`;
+        db.query(query, function(err, result) {
+            if (err) throw err;
+            if (result.length == 0) {
+                ROOM_FOUND = false;
+            } else {
+                ROOM_FOUND = true;
+            }
+            socket.emit('dataUpdate', ['ROOM_FOUND'], [ROOM_FOUND]);
+        });
+    });
     // -- Get Message History
     socket.on('getMessageHistory', function(roomId) {
         query = `SELECT user_id, message, datetime
             FROM chat_log
             WHERE room_id = "` + roomId + `"`;
-        console.log(query);
         db.query(query, function(err, result) {
             if (err) throw err;
-            console.log(result);
-            socket.emit('dataUpdate', ['MESSAGE_HISTORY_BUFFER'], [result]);
+            let messages = [];
+            result.forEach(row => {
+                messages.push(`{
+                    user_id: "`+row.user_id+`",
+                    message: "`+row.message+`"
+                }`);
+            });
+            // socket.emit('dataUpdate', ['MESSAGE_HISTORY_BUFFER'], ['[' + messages + ']']);
+            socket.emit('setMessageHistory', result);
         });
     });
 
     // Disconnect
     socket.on('disconnect', function() {
         io.in(socket.room).emit('disconnect', socket.username);
+        io.in(socket.room).emit('refreshUserList', getUsernames(socket.room));
     });
 
     // File Transfer
@@ -173,7 +218,6 @@ io.on('connection', function(socket) {
             if(err) throw err;
         });
     });
-    
 
 });
 
