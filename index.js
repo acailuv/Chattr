@@ -1,8 +1,10 @@
-var express = require('express')
+var express = require('express');
 var app = express();
 var http = require('http').Server(app);
 var io = require('socket.io')(http);
 var mysql = require('mysql');
+var fs = require('fs');
+var dl = require('delivery')
 
 
 // Database Initialization
@@ -108,14 +110,11 @@ io.on('connection', function(socket) {
         db.query(query, function(err) {
             if (err) throw err;
         });
-        io.in(socket.room).emit('sendMessage', socket.username, socket.id, msg);
+        io.in(socket.room).emit('sendMessage', socket.username, msg);
     });
 
     // Change Room
     socket.on('changeRoom', function(newRoom) {
-        // if room has password, put smth here:
-        // ...
-        // ...
         socket.to(socket.room).emit('leaveRoom', socket.username);
         socket.room = newRoom;
         socket.leaveAll();
@@ -146,7 +145,19 @@ io.on('connection', function(socket) {
                     PASSWORD_AUTH = false;
                 }
             }
-            socket.emit('authentication', ['ROOM_FOUND', 'PASSWORD_AUTH'], [ROOM_FOUND, PASSWORD_AUTH]);
+            socket.emit('dataUpdate', ['ROOM_FOUND', 'PASSWORD_AUTH'], [ROOM_FOUND, PASSWORD_AUTH]);
+        });
+    });
+    // -- Get Message History
+    socket.on('getMessageHistory', function(roomId) {
+        query = `SELECT user_id, message, datetime
+            FROM chat_log
+            WHERE room_id = "` + roomId + `"`;
+        console.log(query);
+        db.query(query, function(err, result) {
+            if (err) throw err;
+            console.log(result);
+            socket.emit('dataUpdate', ['MESSAGE_HISTORY_BUFFER'], [result]);
         });
     });
 
@@ -154,6 +165,15 @@ io.on('connection', function(socket) {
     socket.on('disconnect', function() {
         io.in(socket.room).emit('disconnect', socket.username);
     });
+
+    // File Transfer
+    var delivery = dl.listen(socket);
+    delivery.on('receive.success', function(file){
+        fs.writeFile("files/"+file.name, file.buffer, function(err){
+            if(err) throw err;
+        });
+    });
+    
 
 });
 

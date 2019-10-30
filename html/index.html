@@ -9,14 +9,10 @@
         <script src="node_modules/jquery/dist/jquery.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
         <script src="node_modules/bootstrap/dist/js/bootstrap.min.js"></script>
+        <script src="node_modules/delivery/lib/client/delivery.js"></script>
         <script type="text/javascript" src="../js/client.js"></script>
         <script>
-            // GLOBAL VARIABLES
-            var socket = io();
-            var sender;
-            socket.on('connect', function() {
-                sender = socket.id;
-            });
+            
         </script>
 
         <!-- CSS -->
@@ -106,7 +102,7 @@
                                         </button>
                                     </div>
                                     <div class="modal-body text-dark">
-                                        <form>
+                                        <form oninput="checkRoomCredentials(roomIdOnChange, roomPasswordOnChange);">
                                             <div class="form-group">
                                                 <label for="roomIdOnChange">Room ID</label>
                                                 <input type="text" class="form-control" id="roomIdOnChange" placeholder="Chattr" autocomplete="off">
@@ -163,11 +159,11 @@
         </form>
 
         <!-- File Input (Upload) Modal -->
-        <div class="modal fade" id="uploadModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal fade" id="uploadModal" tabindex="-1" role="dialog" aria-labelledby="uploadModalLabel" aria-hidden="true">
             <div class="modal-dialog modal-lg" role="document">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title" id="exampleModalLabel">Upload File</h5>
+                        <h5 class="modal-title" id="uploadModalLabel">Upload File</h5>
                         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                             <span aria-hidden="true">&times;</span>
                         </button>
@@ -176,8 +172,9 @@
                         <div class="col-sm">
                             <form method="post" action="#" id="#">
                                 <div class="form-group files color">
-                                    <input type="file" class="form-control" multiple="">
+                                    <input type="file" class="form-control" multiple="" id="fileUpload">
                                 </div>
+                                <button type="button" class="btn btn-success" id="submitUpload">Upload File</button>
                             </form>
                         </div>
                     </div>

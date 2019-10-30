@@ -1,26 +1,60 @@
-var PASSWORD_AUTH = false;
-var ROOM_FOUND = false;
+// GLOBAL VARIABLES
+var socket = io();
+var sender;
+socket.on('connect', function() {
+    sender = socket.username;
+    username = socket.username;
+});
+var delivery = new Delivery(socket);
+var PASSWORD_AUTH = false; // Correct password? (true/false)
+var ROOM_FOUND = false; // Room found in database? (true/false)
+var MESSAGE_HISTORY_BUFFER = []; // All the messages in the room (array)
 
-// Change Room Button Listener
-// Plans for final product:
-// > when creating room, store password (if created) to database
-// > when a user wants to change room, check database for that room
-//   and ask password if that room is pasworded.
+// More-than-once functions.
+// [?]: More-than-once functions are a set of code that are used more than once.
+// -- Send Message
+function sendMessageHandler(username, msg) {
+    let $separator = $('<div style="border-top: 1px solid rgba(0,0,0,0.2);"/>');
+
+        if (username == sender) {
+            $('#messages').append(
+                $('<div class="speech-bubble right bg-success">').append([
+                    $('<div class="username"/>').text("You"),
+                    $separator,
+                    $('<div class="content"/>').text(msg)
+                ])
+            );
+        } else {
+            $('#messages').append(
+                $('<div class="speech-bubble left bg-light">').append([
+                    $('<div class="username"/>').text(username),
+                    $separator,
+                    $('<div class="content"/>').text(msg)
+                ])
+            );
+        }
+        let messages = document.getElementById('messages');
+        messages.scrollTo({
+            top: messages.scrollHeight,
+            behavior: 'smooth'
+        });
+}
+//---------- End of More-than-once functions
+
+
+// Check Room Credentials from Server
+function checkRoomCredentials(roomId, pwd) {
+    socket.emit('checkRoomCredentials', roomId.value, pwd.value);
+    console.log(ROOM_FOUND, PASSWORD_AUTH);
+}
+
+// Change Room
 function changeRoom (roomId, pwd) {
 
-    /**
-     * Change Room:
-     * Query from database based on roomId.
-     * If not found -> handling
-     */
     if (roomId.value == '') {
         alert("Room ID cannot be empty!");
         return false;
     }
-
-    socket.emit('checkRoomCredentials', roomId.value, pwd.value);
-
-    console.log(ROOM_FOUND, PASSWORD_AUTH);
 
     if (ROOM_FOUND == false) {
         alert("The specified Room ID cannot be found.");
@@ -33,14 +67,22 @@ function changeRoom (roomId, pwd) {
     }
 
     socket.emit('changeRoom', roomId.value);
-    $('#messages').empty();
-    $('#changeRoomModal').modal('hide');
-    // Get message from database here.
-    // IF user wants to.
 
+    // Get message from database IF needed.
+    if (document.getElementById('getMessageHistory').checked) {
+        socket.emit('getMessageHistory', roomId.value);
+        MESSAGE_HISTORY_BUFFER.forEach(chat => {
+            sendMessageHandler(chat.user_id, chat.message);
+        });
+    }
+
+    $('#changeRoomModal').modal('hide');
+    $('#messages').empty();
+    $('#roomIdOnChange').val('');
+    $('#roomPasswordOnChange').val('');
 }
 
-// Create Room Button Listener
+// Create Room
 function createRoom (roomId, pwd, confirmation) {
 
     if (pwd.value != confirmation.value) {
@@ -64,6 +106,8 @@ function createRoom (roomId, pwd, confirmation) {
     $('#messages').empty();
 }
 
+
+// Start of JQuery
 $(document).ready(function() {
 
     // Initialize Tooltip
@@ -96,31 +140,8 @@ $(document).ready(function() {
     });
 
     // Send Message
-    socket.on('sendMessage', function(username, id, msg) {
-        let $separator = $('<div style="border-top: 1px solid rgba(0,0,0,0.2);"/>');
-
-        if (id == sender) {
-            $('#messages').append(
-                $('<div class="speech-bubble right bg-success">').append([
-                    $('<div class="username"/>').text("You"),
-                    $separator,
-                    $('<div class="content"/>').text(msg)
-                ])
-            );
-        } else {
-            $('#messages').append(
-                $('<div class="speech-bubble left bg-light">').append([
-                    $('<div class="username"/>').text(username),
-                    $separator,
-                    $('<div class="content"/>').text(msg)
-                ])
-            );
-        }
-        let messages = document.getElementById('messages');
-        messages.scrollTo({
-            top: messages.scrollHeight,
-            behavior: 'smooth'
-        });
+    socket.on('sendMessage', function(username, msg) {
+        sendMessageHandler(username, msg);
     });
 
     // Join Room
@@ -165,11 +186,26 @@ $(document).ready(function() {
         }
     });
 
-    // Authentication Flag Transfer
-    socket.on('authentication', function(authKey, flag) {
-        for (var i=0; i<authKey.length; i++) {
-            eval(authKey[i] + '=' + flag[i]);
+    // dataSend: Sending data to update client's variables.
+    socket.on('dataUpdate', function(dataSet, valueSet) {
+        for (var i=0; i<dataSet.length; i++) {
+            eval(dataSet[i] + ' = ' + valueSet[i]);
         }
+    });
+
+    // File Transfer
+    delivery.on('delivery.connect',function(delivery){
+        $("#submitUpload").click(function(evt){
+            var file = $("#fileUpload")[0].files[0];
+            delivery.send(file);
+            evt.preventDefault();
+        });
+    });
+
+    delivery.on('send.success',function(fileUID){
+        alert("File transfer successful!");
+        $('#fileUpload').val('');
+        $('#uploadModal').modal('hide');
     });
 
 });
