@@ -5,7 +5,7 @@ var io = require('socket.io')(http);
 var mysql = require('mysql');
 var fs = require('fs');
 var dl = require('delivery')
-
+var randomString = require('randomstring');
 
 // Database Initialization
 var db = mysql.createConnection({
@@ -22,7 +22,7 @@ db.connect(function(err) {
         user_id varchar(32) NOT NULL,
         room_id varchar(32),
         message LONGTEXT,
-        datetime DATETIME
+        type VARCHAR(10)
     )`;
     db.query(query, function(err) {
         if (err) throw err;
@@ -116,7 +116,7 @@ io.on('connection', function(socket) {
                 "`+socket.username+`",
                 "`+socket.room+`",
                 "`+msg+`",
-                NOW()
+                "message"
             );`;
         db.query(query, function(err) {
             if (err) throw err;
@@ -188,19 +188,11 @@ io.on('connection', function(socket) {
     });
     // -- Get Message History
     socket.on('getMessageHistory', function(roomId) {
-        query = `SELECT user_id, message, datetime
+        query = `SELECT user_id, message, type
             FROM chat_log
             WHERE room_id = "` + roomId + `"`;
         db.query(query, function(err, result) {
             if (err) throw err;
-            let messages = [];
-            result.forEach(row => {
-                messages.push(`{
-                    user_id: "`+row.user_id+`",
-                    message: "`+row.message+`"
-                }`);
-            });
-            // socket.emit('dataUpdate', ['MESSAGE_HISTORY_BUFFER'], ['[' + messages + ']']);
             socket.emit('setMessageHistory', result);
         });
     });
@@ -211,11 +203,43 @@ io.on('connection', function(socket) {
         io.in(socket.room).emit('refreshUserList', getUsernames(socket.room));
     });
 
-    // File Transfer
+    // File Upload
     var delivery = dl.listen(socket);
     delivery.on('receive.success', function(file){
-        fs.writeFile("files/"+file.name, file.buffer, function(err){
+        var key;
+        var url;
+        do {
+            key = "_" + randomString.generate();
+        } while(fs.existsSync('files/'+file.name+key));
+
+        url = 'files/'+file.name+key
+
+        fs.writeFile(url, file.buffer, function(err){
             if(err) throw err;
+        });
+
+        query = `INSERT INTO chat_log
+            VALUES (
+                "`+socket.username+`",
+                "`+socket.room+`",
+                "`+url+`",
+                "file"
+            );`;
+        db.query(query, function(err) {
+            if (err) throw err;
+        });
+
+        io.in(socket.room).emit('sendFile', socket.username, file.name, key);
+    });
+
+    // File Download
+    socket.on('getFile', function(fileName, key) {
+
+        var url = 'files/'+fileName+key;
+
+        fs.readFile(url, function(err, data) {
+            if (err) throw err;
+            socket.emit('downloadFile', fileName, data);
         });
     });
 

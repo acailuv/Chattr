@@ -13,24 +13,52 @@ var MESSAGE_HISTORY_BUFFER = []; // All the messages in the room (array)
 // [?]: More-than-once functions are a set of code that are used more than once.
 
 // -- Send Message
+function appendMessage($separator, msg, senderUsername) {
+    $('#messages').append(
+        $('<div class="speech-bubble right bg-success">').append([
+            $('<div class="username"/>').text(senderUsername),
+            $separator,
+            $('<div class="content"/>').text(msg)
+        ])
+    );
+}
 function sendMessageHandler(username, msg) {
     let $separator = $('<div style="border-top: 1px solid rgba(0,0,0,0.2);"/>');
     if (username == clientUsername) {
-        $('#messages').append(
-            $('<div class="speech-bubble right bg-success">').append([
-                $('<div class="username"/>').text("You"),
-                $separator,
-                $('<div class="content"/>').text(msg)
-            ])
-        );
+        appendMessage($separator, msg, "You");
     } else {
-        $('#messages').append(
-            $('<div class="speech-bubble left bg-light">').append([
-                $('<div class="username"/>').text(username),
-                $separator,
-                $('<div class="content"/>').text(msg)
-            ])
-        );
+        appendMessage($separator, msg, username);
+    }
+    let messages = document.getElementById('messages');
+    messages.scrollTo({
+        top: messages.scrollHeight,
+        behavior: 'smooth'
+    });
+}
+
+// -- Send File
+function appendMessageFile($separator, content, senderUsername) {
+    $('#messages').append(
+        $('<div class="speech-bubble right bg-success">').append([
+            $('<div class="username"/>').text(senderUsername),
+            $separator,
+            $('<div class="content"/>').html(content)
+        ])
+    );
+}
+
+function sendFileHandler(username, fileName, key) {
+    let $separator = $('<div style="border-top: 1px solid rgba(0,0,0,0.2);"/>');
+    let content = 
+        `<article style="margin-top: 16px;">`+
+            `<span class="fa fa-file-alt fa-lg"> </span><a style="font-size: 16px;" href="#" id="fileName" onclick="downloadFile(this.parentElement)">`+fileName+`</a>` + 
+            `<span id="key" hidden>`+key+`</span><br>` + 
+        `</article>`;
+
+    if (username == clientUsername) {
+        appendMessageFile($separator, content, "You");
+    } else {
+        appendMessageFile($separator, content, username);
     }
     let messages = document.getElementById('messages');
     messages.scrollTo({
@@ -42,16 +70,37 @@ function sendMessageHandler(username, msg) {
 //---------------------------------------------- End of More-than-once functions
 
 
-// Check Room Credentials from Server
+
+// Callback functions.
+// [?]: Callback functions are functions that are bound to certain elements.
+
+// -- Check Room Credentials from Server
 function checkRoomCredentials(roomId, pwd) {
     socket.emit('checkRoomCredentials', roomId.value, pwd.value);
 }
 
-// Check Room availability from server
+// -- Check Room availability from server
 function checkRoomAvailability(roomId) {
     socket.emit('checkRoomAvailability', roomId.value);
-    console.log(ROOM_FOUND);
 }
+
+// -- Download File
+function downloadFile(article) {
+    var childs = article.children;
+    var fileName, key;
+    for (var i in childs) {
+        if (childs[i].id == "fileName") {
+            fileName = childs[i].innerHTML;
+        }
+        if (childs[i].id == "key") {
+            key = childs[i].innerHTML;
+            break;
+        }
+    }
+    socket.emit('getFile', fileName, key);
+}
+
+//---------------------------------------------- End of Callback functions
 
 // Change Room
 function changeRoom (roomId) {
@@ -153,6 +202,11 @@ $(document).ready(function() {
         sendMessageHandler(username, msg);
     });
 
+    // Send File
+    socket.on('sendFile', function(username, fileName, key) {
+        sendFileHandler(username, fileName, key);
+    });
+
     // Join Room
     socket.on('joinRoom', function(username) {
         $('#messages').append(
@@ -200,13 +254,21 @@ $(document).ready(function() {
         }
     });
     socket.on('setMessageHistory', function(messageHistory) {
+        $('#messages').empty();
         MESSAGE_HISTORY_BUFFER = messageHistory;
         MESSAGE_HISTORY_BUFFER.forEach(chat => {
-            sendMessageHandler(chat.user_id, chat.message);
+            if (chat.type == 'message') {
+                sendMessageHandler(chat.user_id, chat.message);
+            } else if (chat.type == 'file') {
+                chat.message = chat.message.replace('files/', '');
+                var fileName = chat.message.split("_")[0];
+                var key = "_" + chat.message.split("_")[1];
+                sendFileHandler(chat.user_id, fileName, key);
+            }
         });
     });
 
-    // File Transfer
+    // File Upload
     delivery.on('delivery.connect',function(delivery){
         $("#submitUpload").click(function(evt){
             evt.preventDefault();
@@ -214,11 +276,17 @@ $(document).ready(function() {
             delivery.send(file);
         });
     });
-
     delivery.on('send.success',function(){
         alert("File transfer successful!");
         $('#fileUpload').val('');
         $('#uploadModal').modal('hide');
+    });
+
+    // File Download
+    socket.on('downloadFile', function(fileName, dataBuffer) {
+        download(dataBuffer, fileName, function(err) {
+            if (err) err;
+        });
     });
 
 });
