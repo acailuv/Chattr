@@ -1,32 +1,184 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <!-- JavaScripts -->
-    <script src="/socket.io/socket.io.js"></script>
-    <script src="https://code.jquery.com/jquery-1.11.1.js"></script>
-    <script type="text/javascript" src="../js/client.js"></script>
-    <!-- YOU NEED TO THIS IN INDEX (HOME) -->
-    <!-- <script>
-        // GLOBAL VARIABLES
-        var socket = io();
-        var sender;
-        socket.on('connect', function() {
-            sender = socket.id;
-        });
-    </script> -->
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <!-- CSS -->
-    <link href="../node_modules/bootstrap/dist/css/bootstrap.css" rel="stylesheet" type="text/css">
-    <link href="../node_modules/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet" type="text/css">
-    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.0/css/all.css" integrity="sha384-lZN37f5QGtY3VHgisS14W3ExzMWZxybE1SJSEsQp9S+oqd12jhcu+A56Ebc1zFSJ" crossorigin="anonymous">
-    <link rel="stylesheet" type="text/css" href="../css/chatbubble.css">
-  </head>
-  <body>
-    <p>Chat Log:</p>
-    <div id="messages"></div>
-    <form id="messageForm">
-      <input class=" col-md-10" style="border-radius: .4em;" id="messageBox" autocomplete="off" placeholder="Send a message...."/>
-      <button class="btn btn-success fa fa-paper-plane col-md-1 container-fluid" style="border-radius: .4em;">Send</button>
-    </form>
-  </body>
+<html>
+    <head>
+        <title>Chattr!</title>
+
+        <!-- JavaScripts -->
+        <script src="/socket.io/socket.io.js"></script>
+        <script src="/node_modules/jquery/dist/jquery.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+        <script src="/node_modules/bootstrap/dist/js/bootstrap.min.js"></script>
+        <script src="/node_modules/delivery/lib/client/delivery.js"></script>
+        <script src="/js/download.js"></script>
+        <script type="text/javascript" src="../js/client.js"></script>
+        <script>
+            
+        </script>
+
+        <!-- CSS -->
+        <link href="../node_modules/bootstrap/dist/css/bootstrap.css" rel="stylesheet" type="text/css">
+        <link href="../node_modules/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet" type="text/css">
+        <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.0/css/all.css" integrity="sha384-lZN37f5QGtY3VHgisS14W3ExzMWZxybE1SJSEsQp9S+oqd12jhcu+A56Ebc1zFSJ" crossorigin="anonymous">
+        <link rel="stylesheet" type="text/css" href="../css/chattr.css">
+    </head>
+
+    <body>
+        <!-- <div id="header" class="header container-fluid bg-dark">
+            <span class="title">> Waiting for Homepage</span>
+            <span class="title fade">_</span>
+        </div> -->
+
+        <div class="container-fluid">
+            <div class="row">
+
+                <!-- Current Room and User List -->
+                <div id="userListContainer" class="container col-2 overflow-auto">
+                    <div class="card text-center bg-dark text-white">
+                        <div class="card-body">
+                            <h5 class="card-title">Current Room</h5>
+                            <p id="roomName" class="card-text text-success"></p>
+                        </div>
+
+                        <!-- Create Room Button -->
+                        <button type="button"
+                            class="btn btn-success"
+                            data-toggle="modal"
+                            data-target="#createRoomModal"
+                            title="Create a new chatroom."
+                            id="createRoomButton">Create</button>
+                            <div class="modal fade" id="createRoomModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                                <div class="modal-dialog" role="document">
+                                    <div class="modal-content">
+                                        <div class="modal-header text-dark">
+                                            <h5 class="modal-title" id="createRoomModalLabel">Create a new chatroom</h5>
+                                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                <span aria-hidden="true">&times;</span>
+                                            </button>
+                                        </div>
+                                        <div class="modal-body text-dark">
+                                            <form oninput="checkRoomAvailability(roomIdOnCreate);">
+                                                <div class="form-group">
+                                                    <label for="roomIdOnCreate">Room ID</label>
+                                                    <input type="text" class="form-control" id="roomIdOnCreate" placeholder="Chattr" autocomplete="off">
+                                                </div>
+                                                <div class="form-group">
+                                                    <label for="roomPasswordOnCreate">Password (Optional)</label>
+                                                    <input type="password" class="form-control" id="roomPasswordOnCreate" placeholder="Password" autocomplete="off">
+                                                </div>
+                                                <div class="form-group">
+                                                    <label for="roomPassword">Confirm Password</label>
+                                                    <input type="password" class="form-control" id="roomPasswordConfirmation" placeholder="Password" autocomplete="off">
+                                                </div>
+                                                <button type="button" class="btn btn-primary" id="createRoom">Create</button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                        <!-- Change Room Button -->
+                        <button type="button"
+                            class="btn btn-warning"
+                            data-toggle="modal"
+                            data-target="#changeRoomModal"
+                            title="Move to a new chatroom.">Change</button>
+                        <div class="modal fade" id="changeRoomModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                            <div class="modal-dialog" role="document">
+                                <div class="modal-content">
+                                    <div class="modal-header text-dark">
+                                        <h5 class="modal-title" id="changeRoomModalLabel">Move to a new chatroom</h5>
+                                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                            <span aria-hidden="true">&times;</span>
+                                        </button>
+                                    </div>
+                                    <div class="modal-body text-dark">
+                                        <form oninput="checkRoomCredentials(roomIdOnChange, roomPasswordOnChange);">
+                                            <div class="form-group">
+                                                <label for="roomIdOnChange">Room ID</label>
+                                                <input type="text" class="form-control" id="roomIdOnChange" placeholder="Chattr" autocomplete="off">
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="roomPasswordOnChange">Password (If Needed)</label>
+                                                <input type="password" class="form-control" id="roomPasswordOnChange" placeholder="Password" autocomplete="off">
+                                            </div>
+                                            <div class="form-check">
+                                                <input type="checkbox" 
+                                                    class="form-check-input" 
+                                                    id="getMessageHistory"
+                                                    data-toggle="tooltip"
+                                                    data-placement="bottom"
+                                                    title="If checked, all messages from that room that are stored in the database will be loaded upon entry.">
+                                                <label class="form-check-label" for="getMessageHistory">
+                                                    Get Message History?
+                                                </label>
+                                            </div>
+                                            <br>
+                                            <button type="button" class="btn btn-primary" id="changeRoom">Change Room</button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <button type="button"
+                            class="btn btn-primary"
+                            id="syncButton">
+                            <span class="fa fa-sync-alt"></span> Sync Message
+                        </button>
+
+                    </div>
+
+                    <!-- Online Users in Room -->
+                    <div class="card text-center bg-dark text-white" style="margin-top: 32px;">
+                        <div class="card-body">
+                            <h5 class="card-title">Online Users:</h5>
+                        </div>
+                        <ul id="userList" class="list-group list-group-flush bg-secondary">
+                        </ul>
+                    </div>
+                </div>
+                <div id="messages" class="container col-10 overflow-auto"></div>
+            </div>
+        </div>
+        
+        <form id="messageForm" class="messageForm input-group bg-dark">
+            <input class="form-control" style="border-radius: .4em;" id="messageBox" autocomplete="off" placeholder="Send a message...."/>
+            <span class="input-group-btn">
+                <button type="submit" class="btn btn-success" style="border-radius: .4em; margin-left: 8px;">Send</button>
+                <button type="button"
+                    class="btn btn-primary fa fa-paperclip"
+                    style="border-radius: .4em; margin-left: 8px;"
+                    data-toggle="modal"
+                    data-target="#uploadModal"
+                    title="Upload A File"></button>
+            </span>
+        </form>
+
+        <!-- File Input (Upload) Modal -->
+        <div class="modal fade" id="uploadModal" tabindex="-1" role="dialog" aria-labelledby="uploadModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-lg" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="uploadModalLabel">Upload File</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body container-fluid">
+                        <div class="col-sm">
+                            <form method="post" action="#" id="#">
+                                <div class="form-group files color">
+                                    <input type="file" class="form-control" multiple="" id="fileUpload">
+                                </div>
+                                <button type="button" class="btn btn-success" id="submitUpload">Upload File</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </body>
 </html>
