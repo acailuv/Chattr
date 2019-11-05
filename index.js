@@ -113,14 +113,21 @@ io.on('connection', function(socket) {
     socket.on('sendMessage', function(msg) {
         query = `INSERT INTO chat_log
             VALUES (
-                "`+socket.username+`",
-                "`+socket.room+`",
-                "`+msg+`",
+                ?,
+                ?,
+                ?,
                 "message"
             );`;
-        db.query(query, function(err) {
-            if (err) throw err;
-        });
+        db.query(query,
+            [
+                socket.username,
+                socket.room,
+                msg
+            ],
+            function(err) {
+                if (err) throw err;
+            }
+        );
         io.in(socket.room).emit('sendMessage', socket.username, msg);
     });
 
@@ -138,12 +145,18 @@ io.on('connection', function(socket) {
     socket.on('createRoom', function(roomId, pwd) {
         query = `INSERT INTO rooms
             VALUES (
-                "`+roomId+`",
-                "`+pwd+`"
+                ?,
+                ?
             );`;
-        db.query(query, function(err) {
-            if (err) throw err;
-        });
+        db.query(query,
+            [
+                roomId,
+                pwd
+            ],
+            function(err) {
+                if (err) throw err;
+            }
+        );
     });
     // -- Check Room Availability and Password
     socket.on('checkRoomCredentials', function(roomId, password) {
@@ -152,22 +165,27 @@ io.on('connection', function(socket) {
 
         query = `SELECT password
             FROM rooms
-            WHERE room_id = "` + roomId + `"`;
-        db.query(query, function(err, result) {
-            if (err) throw err;
-            if (result.length == 0) {
-                ROOM_FOUND = false;
-            } else {
-                ROOM_FOUND = true;
-                let correctPassword = result[0].password;
-                if (password == correctPassword) {
-                    PASSWORD_AUTH = true;
+            WHERE room_id = ?`;
+        db.query(query,
+            [
+                roomId
+            ],
+            function(err, result) {
+                if (err) throw err;
+                if (result.length == 0) {
+                    ROOM_FOUND = false;
                 } else {
-                    PASSWORD_AUTH = false;
+                    ROOM_FOUND = true;
+                    let correctPassword = result[0].password;
+                    if (password == correctPassword) {
+                        PASSWORD_AUTH = true;
+                    } else {
+                        PASSWORD_AUTH = false;
+                    }
                 }
+                socket.emit('dataUpdate', ['ROOM_FOUND', 'PASSWORD_AUTH'], [ROOM_FOUND, PASSWORD_AUTH]);
             }
-            socket.emit('dataUpdate', ['ROOM_FOUND', 'PASSWORD_AUTH'], [ROOM_FOUND, PASSWORD_AUTH]);
-        });
+        );
     });
     // -- Check Room Availability
     socket.on('checkRoomAvailability', function(roomId) {
@@ -175,26 +193,36 @@ io.on('connection', function(socket) {
 
         query = `SELECT *
             FROM rooms
-            WHERE room_id = "` + roomId + `"`;
-        db.query(query, function(err, result) {
-            if (err) throw err;
-            if (result.length == 0) {
-                ROOM_FOUND = false;
-            } else {
-                ROOM_FOUND = true;
+            WHERE room_id = ?`;
+        db.query(query,
+            [
+                roomId
+            ],
+            function(err, result) {
+                if (err) throw err;
+                if (result.length == 0) {
+                    ROOM_FOUND = false;
+                } else {
+                    ROOM_FOUND = true;
+                }
+                socket.emit('dataUpdate', ['ROOM_FOUND'], [ROOM_FOUND]);
             }
-            socket.emit('dataUpdate', ['ROOM_FOUND'], [ROOM_FOUND]);
-        });
+        );
     });
     // -- Get Message History
     socket.on('getMessageHistory', function(roomId) {
         query = `SELECT user_id, message, type
             FROM chat_log
-            WHERE room_id = "` + roomId + `"`;
-        db.query(query, function(err, result) {
-            if (err) throw err;
-            socket.emit('setMessageHistory', result);
-        });
+            WHERE room_id = ?`;
+        db.query(query,
+            [
+                roomId
+            ],
+            function(err, result) {
+                if (err) throw err;
+                socket.emit('setMessageHistory', result);
+            }
+        );
     });
 
     // Disconnect
@@ -220,14 +248,21 @@ io.on('connection', function(socket) {
 
         query = `INSERT INTO chat_log
             VALUES (
-                "`+socket.username+`",
-                "`+socket.room+`",
-                "`+url+`",
+                ?,
+                ?,
+                ?,
                 "file"
             );`;
-        db.query(query, function(err) {
-            if (err) throw err;
-        });
+        db.query(query,
+            [
+                socket.username,
+                socket.room,
+                url
+            ],
+            function(err) {
+                if (err) throw err;
+            }
+        );
 
         io.in(socket.room).emit('sendFile', socket.username, file.name, key);
     });
