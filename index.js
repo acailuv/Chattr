@@ -6,6 +6,18 @@ var mysql = require('mysql');
 var fs = require('fs');
 var dl = require('delivery')
 var randomString = require('randomstring');
+var session = require('express-session')
+
+var sessionMiddleware = session({
+    secret: 'chattrHCI', // secret can be changed into anything
+    resave: true,
+    saveUninitialized: true
+})
+
+// Tell express to use express-session
+app.use(sessionMiddleware)
+app.use(express.json())
+app.use(express.urlencoded({extended: true}));
 
 // Database Initialization
 var db = mysql.createConnection({
@@ -52,7 +64,68 @@ app.get('/', function(req, res) {
 });
 
 app.get('/chattr.html', function(req, res) {
-    res.sendFile(__dirname + "/html/chattr.html");
+    if(req.session.loggedin == true) {
+        res.sendFile(__dirname + "/html/chattr.html");
+    } else {
+        res.redirect('/')
+    }
+});
+
+// Recieve POST requests
+app.post('/auth', function(request, response) {
+    // TODO replace all response.send() with actual alerts instead of redirecting to blank html.
+    var username = request.body.username
+    var password = request.body.password
+    if(username && password) {
+        db.query('SELECT * FROM users WHERE user_id = ? AND password = ?', [username, password], function(error, results, fields) {
+            if (error) {
+                console.log(error)
+            }
+            if(results.length > 0) {
+                request.session.loggedin = true
+                request.session.username = username
+                response.redirect('/chattr.html')
+            } else {
+                response.send('Invalid username and/or password!')
+            }
+            response.end()
+        })
+    } else {
+        response.send("Please enter Username and Password!");
+        response.end();
+    }
+});
+
+app.post('/regis', function(request, response) {
+    // TODO replace all response.send() with actual alerts instead of redirecting to blank html.
+    var username = request.body.username
+    var password = request.body.password
+    var confirmPassword = request.body.password2
+    if(username && (password == confirmPassword)) {
+        db.query('SELECT * FROM users WHERE user_id = ?', [username], function(error, results, fields) {
+            if (error) {
+                console.log(error)
+            }
+            if(results.length > 0) {
+                response.send('You have chosen an existing username')
+            } else {
+                // insert to table
+                db.query('INSERT INTO users VALUES (?, ?)', [username, password], function(error) {
+                    if(error) {
+                        console.log(error)
+                    }
+                })
+                response.redirect('/')
+                // response.send('Account registered!')
+            }
+            response.end()
+        })
+    } else if(password != confirmPassword) {
+        response.send('Passwords do not match!')
+    } else {
+        response.send("Please enter Username and Password!");
+        response.end();
+    }
 });
 
 app.use(express.static(__dirname));
@@ -96,10 +169,16 @@ function getUsernames(inRoom) {
 
 //---------------------------------------------- End of More-than-once functions
 
+io.use(function(socket, next) {
+    sessionMiddleware(socket.request, socket.request.res, next)
+})
+
 io.on('connection', function(socket) {
 
     // Default values that will be replace when logging in.
     socket.username = "NoName";
+    // testing custom usernames
+    socket.username = socket.request.session.username
     socket.room = "world";
 
     // Welcoming message and stuff

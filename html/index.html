@@ -77,14 +77,14 @@
                     </button>
                   </div>
                   <div class="modal-body">
-                    <form>
+                    <form action="auth" method="POST">
                         <div class="form-group">
                           <label for="inputUsername">Username</label>
-                          <input type="text" class="form-control" id="inputUsername" placeholder="Enter Username">
+                          <input type="text" class="form-control" id="inputUsername" name="username" placeholder="Enter Username" required>
                         </div>
                         <div class="form-group">
                           <label for="inputPassword">Password</label>
-                          <input type="password" class="form-control" id="inputPassword" placeholder="Enter Password">
+                          <input type="password" class="form-control" id="inputPassword" name="password" placeholder="Enter Password" required>
                         </div>
                         <button type="submit" class="btn btn-primary">Log In</button>
                       </form>
@@ -104,18 +104,18 @@
                     </button>
                   </div>
                   <div class="modal-body">
-                    <form>
+                    <form action="regis" method="POST">
                         <div class="form-group">
                           <label for="inputUsername">Username</label>
-                          <input type="text" class="form-control" id="inputUsername" placeholder="Enter Username">
+                          <input type="text" class="form-control" id="inputUsername" name="username" placeholder="Enter Username" required>
                         </div>
                         <div class="form-group">
                           <label for="inputPassword">Password</label>
-                          <input type="password" class="form-control" id="inputPassword" placeholder="Enter Password">
+                          <input type="password" class="form-control" id="inputPassword" name="password" placeholder="Enter Password" required>
                         </div>
                         <div class="form-group">
                             <label for="inputPassword">Re-enter Password</label>
-                            <input type="password" class="form-control" id="reInputPassword" placeholder="Re-enter Password">
+                            <input type="password" class="form-control" id="reInputPassword" name="password2" placeholder="Re-enter Password" required>
                         </div>
                         <button type="submit" class="btn btn-primary">Register</button>
                       </form>
