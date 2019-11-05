@@ -56,8 +56,8 @@
                                     <li><a href="#home-section" class="nav-link" >Home</a></li>
                                     <li><a href="#about-section" class="nav-link">About Us</a></li>
                                     <li><a href="#" class="nav-link">F.A.Q</a></li>
-                                    <li><a href="#home-section" class="nav-link"><button type="button" class="btn btn-dark">Log In</button></a></li>
-                                    <li><a href="#home-section" class="nav-link"><button type="button" class="btn btn-light">Sign Up</button></a></li>
+                                    <li><button type="button" class="btn btn-dark" data-toggle="modal" data-target="#logInModal">Log In</button></li>
+                                    <li><button type="button" class="btn btn-light" data-toggle="modal" data-target="#registerModal">Sign Up</button></li>
                                 </ul>
                             </nav>
                         </div>
@@ -66,7 +66,47 @@
                 </div>
             </header>
 
-        
+            <!-- LogIn Modal -->
+            <div class="modal fade" id="logInModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+              <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                  <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Log In.</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                      <span aria-hidden="true">&times;</span>
+                    </button>
+                  </div>
+                  <div class="modal-body">
+                    Fill in this modal with Log In form, please.
+                  </div>
+                  <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary">Log In</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Register Modal -->
+            <div class="modal fade" id="registerModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+              <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                  <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Register an Account.</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                      <span aria-hidden="true">&times;</span>
+                    </button>
+                  </div>
+                  <div class="modal-body">
+                    Fill in this modal with Register form, please.
+                  </div>
+                  <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary">Register</button>
+                  </div>
+                </div>
+              </div>
+            </div>
           
             <div class="site-blocks-cover overlay" style="background-image: url(../homepage/images/hero_2.jpg);" data-aos="fade" id="home-section">
 
