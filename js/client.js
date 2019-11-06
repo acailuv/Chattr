@@ -14,21 +14,27 @@ var MESSAGE_HISTORY_BUFFER = []; // All the messages in the room (array)
 
 // -- Send Message
 function appendMessage($separator, msg, senderUsername) {
-    $('#messages').append(
-        $('<div class="speech-bubble right bg-success">').append([
-            $('<div class="username"/>').text(senderUsername),
-            $separator,
-            $('<div class="content"/>').text(msg)
-        ])
-    );
+    if (senderUsername == clientUsername) {
+        $('#messages').append(
+            $('<div class="speech-bubble right bg-success">').append([
+                $('<div class="username"/>').text("You"),
+                $separator,
+                $('<div class="content"/>').text(msg)
+            ])
+        );
+    } else {
+        $('#messages').append(
+            $('<div class="speech-bubble left" style="background: whitesmoke;">').append([
+                $('<div class="username"/>').text(senderUsername),
+                $separator,
+                $('<div class="content"/>').text(msg)
+            ])
+        );
+    }
 }
 function sendMessageHandler(username, msg) {
     let $separator = $('<div style="border-top: 1px solid rgba(0,0,0,0.2);"/>');
-    if (username == clientUsername) {
-        appendMessage($separator, msg, "You");
-    } else {
-        appendMessage($separator, msg, username);
-    }
+    appendMessage($separator, msg, username);
     let messages = document.getElementById('messages');
     messages.scrollTo({
         top: messages.scrollHeight,
@@ -38,13 +44,23 @@ function sendMessageHandler(username, msg) {
 
 // -- Send File
 function appendMessageFile($separator, content, senderUsername) {
-    $('#messages').append(
-        $('<div class="speech-bubble right bg-success">').append([
-            $('<div class="username"/>').text(senderUsername),
-            $separator,
-            $('<div class="content"/>').html(content)
-        ])
-    );
+    if (senderUsername == clientUsername) {
+        $('#messages').append(
+            $('<div class="speech-bubble right bg-success">').append([
+                $('<div class="username"/>').text("You"),
+                $separator,
+                $('<div class="content"/>').html(content)
+            ])
+        );
+    } else {
+        $('#messages').append(
+            $('<div class="speech-bubble left" style="background: whitesmoke;">').append([
+                $('<div class="username"/>').text(senderUsername),
+                $separator,
+                $('<div class="content"/>').html(content)
+            ])
+        );
+    }
 }
 
 function sendFileHandler(username, fileName, key) {
@@ -55,11 +71,8 @@ function sendFileHandler(username, fileName, key) {
             `<span id="key" hidden>`+key+`</span><br>` + 
         `</article>`;
 
-    if (username == clientUsername) {
-        appendMessageFile($separator, content, "You");
-    } else {
-        appendMessageFile($separator, content, username);
-    }
+    appendMessageFile($separator, content, username);
+    
     let messages = document.getElementById('messages');
     messages.scrollTo({
         top: messages.scrollHeight,
