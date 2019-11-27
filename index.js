@@ -145,7 +145,7 @@ function printUsers(inRoom) {
     }
 }
 
-// Get all client in a room.
+// Get all client's usernames in a room.
 function getUsernames(inRoom) {
     let usernames = [];
     let room = io.sockets.adapter.rooms[inRoom];
@@ -162,6 +162,25 @@ function getUsernames(inRoom) {
     }
 
     return usernames;
+}
+
+// Get a username's id in room.
+function getIdFor(username, inRoom) {
+    let room = io.sockets.adapter.rooms[inRoom];
+
+    if (room != undefined) {
+        let clients = room.sockets;
+
+        for (let i in clients) {
+
+            let clientSocket = io.sockets.connected[i];
+            if (clientSocket.username == username) {
+                return clientSocket.id;
+            }
+
+        }
+    }
+    return -1;
 }
 
 // More-than-once functions.
@@ -303,6 +322,34 @@ io.on('connection', function(socket) {
             }
         );
     });
+
+    // Private Messaging
+    socket.on('privateMessage', function privateMessage(recipient, message) {
+        var id = getIdFor(recipient, socket.room);
+        if (id == -1) {
+            socket.emit('sendPrivateMessage', '', '', false);
+        } else {
+            socket.emit('sendPrivateMessage', socket.username, message, true);
+            io.to(id).emit('sendPrivateMessage', socket.username, message, true);
+            query = `INSERT INTO chat_log
+                VALUES (
+                    ?,
+                    ?,
+                    ?,
+                    "whisper ${socket.username} ${recipient}"
+                );`;
+            db.query(query,
+                [
+                    socket.username,
+                    socket.room,
+                    message
+                ],
+                function(err) {
+                    if (err) throw err;
+                }
+            );
+        }
+    })
 
     // Disconnect
     socket.on('disconnect', function() {

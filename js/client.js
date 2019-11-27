@@ -42,6 +42,36 @@ function sendMessageHandler(username, msg) {
     });
 }
 
+// -- Send Private Message
+function appendPrivateMessage($separator, msg, senderUsername) {
+    if (senderUsername == clientUsername) {
+        $('#messages').append(
+            $('<div class="speech-bubble right private bg-info">').append([
+                $('<div class="username"/>').text("You"),
+                $separator,
+                $('<div class="content"/>').text(msg)
+            ])
+        );
+    } else {
+        $('#messages').append(
+            $('<div class="speech-bubble left private bg-info">').append([
+                $('<div class="username"/>').text(senderUsername),
+                $separator,
+                $('<div class="content"/>').text(msg)
+            ])
+        );
+    }
+}
+function sendPrivateMessageHandler(username, msg) {
+    let $separator = $('<div style="border-top: 1px solid rgba(0,0,0,0.2);"/>');
+    appendPrivateMessage($separator, msg, username);
+    let messages = document.getElementById('messages');
+    messages.scrollTo({
+        top: messages.scrollHeight,
+        behavior: 'smooth'
+    });
+}
+
 // -- Send File
 function appendMessageFile($separator, content, senderUsername) {
     if (senderUsername == clientUsername) {
@@ -95,6 +125,17 @@ function checkRoomCredentials(roomId, pwd) {
 // -- Check Room availability from server
 function checkRoomAvailability(roomId) {
     socket.emit('checkRoomAvailability', roomId.value);
+}
+
+function checkPrivateMessageForm() {
+    var username = document.getElementById('privateMessageUsername');
+    var message = document.getElementById('privateMessage');
+
+    if (username.value != '' && message.value != '') {
+        document.getElementById('sendPrivateMessage').disabled = false;
+    } else {
+        document.getElementById('sendPrivateMessage').disabled = true;
+    }
 }
 
 // -- Download File
@@ -214,6 +255,15 @@ $(document).ready(function() {
     socket.on('sendMessage', function(username, msg) {
         sendMessageHandler(username, msg);
     });
+    // -- Send Private Message
+    socket.on('sendPrivateMessage', function sendPrivateMessage(senderUsername, msg, recipientFound) {
+        if (!recipientFound) {
+            alert('There is not any user with that username in this room.');
+        } else {
+            $('#privateChatModal').modal('hide');
+            sendPrivateMessageHandler(senderUsername, msg);
+        }
+    })
 
     // Send File
     socket.on('sendFile', function(username, fileName, key) {
@@ -277,8 +327,47 @@ $(document).ready(function() {
                 var fileName = chat.message.split("_")[0];
                 var key = "_" + chat.message.split("_")[1];
                 sendFileHandler(chat.user_id, fileName, key);
+            } else {
+                var whisperUser = chat.type.split(" ");
+                if (whisperUser.includes(clientUsername)) {
+                    sendPrivateMessageHandler(chat.user_id, chat.message);
+                }
             }
         });
+    });
+
+    // Private Messaging
+    $("#sendPrivateMessage").click(function sendPrivateMessageListener(e) {
+        e.preventDefault();
+
+        var recipient = $("#privateMessageUsername").val();
+        var message = $("#privateMessage").val();
+
+        if (recipient == clientUsername) {
+            alert('You cannot send a private message to yourself.');
+            return;
+        }
+
+        $("#privateMessage").val('');
+
+        socket.emit('privateMessage', recipient, message);
+    });
+    $('#privateChatModal').on('shown.bs.modal', function (e) {
+        var recipient = document.getElementById("privateMessageUsername");
+        var message = document.getElementById("privateMessage");
+
+        if (recipient.value != '') {
+            message.focus();
+        } else {
+            recipient.focus();
+        }
+    });
+
+    // Autofocus When Private Messaging
+    $("#privateMessageButton").click(function() {
+        if ($("#privateMessageUsername").val() != '') {
+            document.getElementById("privateMessage").focus();
+        }
     });
 
     // File Upload
