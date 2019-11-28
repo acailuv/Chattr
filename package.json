@@ -10,6 +10,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "bcryptjs": "^2.4.3",
     "bootstrap": "^4.3.1",
     "delivery": "0.0.6",
     "express": "^4.17.1",

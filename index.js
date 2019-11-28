@@ -7,6 +7,7 @@ var fs = require('fs');
 var dl = require('delivery')
 var randomString = require('randomstring');
 var session = require('express-session')
+var bcrypt = require('bcryptjs')
 
 var sessionMiddleware = session({
     secret: 'chattrHCI', // secret can be changed into anything
@@ -76,19 +77,27 @@ app.post('/auth', function(request, response) {
     // TODO replace all response.send() with actual alerts instead of redirecting to blank html.
     var username = request.body.username
     var password = request.body.password
+    
     if(username && password) {
-        db.query('SELECT * FROM users WHERE user_id = ? AND password = ?', [username, password], function(error, results, fields) {
+        db.query('SELECT password FROM users WHERE user_id = ?', [username], function(error, results, fields) {
             if (error) {
                 console.log(error)
             }
             if(results.length > 0) {
-                request.session.loggedin = true
-                request.session.username = username
-                response.redirect('/chattr.html')
+                var row_password = results[0]['password']
+                bcrypt.compare(password, row_password, function(err, res) {
+                    if(res === true) {
+                        request.session.loggedin = true
+                        request.session.username = username
+                        response.redirect('/chattr.html')
+                    } else {
+                        response.send('Invalid username and/or password!')
+                    }
+                })
             } else {
                 response.send('Invalid username and/or password!')
+                response.end()
             }
-            response.end()
         })
     } else {
         response.send("Please enter Username and Password!");
@@ -110,11 +119,18 @@ app.post('/regis', function(request, response) {
                 response.send('You have chosen an existing username')
             } else {
                 // insert to table
-                db.query('INSERT INTO users VALUES (?, ?)', [username, password], function(error) {
-                    if(error) {
-                        console.log(error)
-                    }
+                bcrypt.hash(password, 10, function(err, hash) {
+                    db.query('INSERT INTO users VALUES (?, ?)', [username, hash], function(error) {
+                        if(error) {
+                            console.log(error)
+                        }
+                    })    
                 })
+                // db.query('INSERT INTO users VALUES (?, ?)', [username, password], function(error) {
+                //     if(error) {
+                //         console.log(error)
+                //     }
+                // })
                 response.redirect('/')
                 // response.send('Account registered!')
             }
