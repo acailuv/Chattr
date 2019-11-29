@@ -9,6 +9,8 @@ var randomString = require('randomstring');
 var session = require('express-session')
 var bcrypt = require('bcryptjs')
 
+var sessionAge = 10 * 1000
+
 var sessionMiddleware = session({
     secret: 'chattrHCI', // secret can be changed into anything
     resave: true,
@@ -89,6 +91,7 @@ app.post('/auth', function(request, response) {
                     if(res === true) {
                         request.session.loggedin = true
                         request.session.username = username
+                        request.session.date = Date.now()
                         response.redirect('/chattr.html')
                     } else {
                         response.send('Invalid username and/or password!')
@@ -225,24 +228,31 @@ io.on('connection', function(socket) {
 
     // Send Message
     socket.on('sendMessage', function(msg) {
-        query = `INSERT INTO chat_log
-            VALUES (
-                ?,
-                ?,
-                ?,
-                "message"
-            );`;
-        db.query(query,
-            [
-                socket.username,
-                socket.room,
-                msg
-            ],
-            function(err) {
-                if (err) throw err;
-            }
-        );
-        io.in(socket.room).emit('sendMessage', socket.username, msg);
+        if(Date.now() - socket.request.session.date < sessionAge) {
+            console.log(socket.request.session.date)
+            socket.request.session.date = Date.now()
+            query = `INSERT INTO chat_log
+                VALUES (
+                    ?,
+                    ?,
+                    ?,
+                    "message"
+                );`;
+            db.query(query,
+                [
+                    socket.username,
+                    socket.room,
+                    msg
+                ],
+                function(err) {
+                    if (err) throw err;
+                }
+            );
+            io.in(socket.room).emit('sendMessage', socket.username, msg);
+        } else {
+            socket.request.session.destroy()
+            socket.emit("redirect", "/")
+        }
     });
 
     // Change Room

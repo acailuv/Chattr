@@ -335,6 +335,10 @@ $(document).ready(function() {
             }
         });
     });
+    // Redirect to home page after session expires
+    socket.on('redirect', function(destination) {
+        window.location.href = destination
+    })
 
     // Private Messaging
     $("#sendPrivateMessage").click(function sendPrivateMessageListener(e) {
