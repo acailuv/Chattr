@@ -8,8 +8,18 @@ var dl = require('delivery')
 var randomString = require('randomstring');
 var session = require('express-session')
 var bcrypt = require('bcryptjs')
+var crypto = require('crypto')
 
-var sessionAge = 10 * 1000
+// How long a session lasts
+var sessionAge = 60 * 60 * 1000
+
+// Initialize cryptography ciphers and deciphers
+const algorithm = 'aes-192-cbc'
+const EDpassword = 'chattrHCI' // password can be changed into anything, used to generate key
+// var key = crypto.scryptSync(password, 'salt', 24) // 'salt' can be changed into anything, 24 is the key length for AES
+// var iv = Buffer.alloc(16, 0)
+// var cipher = crypto.createCipheriv(algorithm, key, iv)
+// var decipher = crypto.createDecipheriv(algorithm, key, iv)
 
 var sessionMiddleware = session({
     secret: 'chattrHCI', // secret can be changed into anything
@@ -229,8 +239,12 @@ io.on('connection', function(socket) {
     // Send Message
     socket.on('sendMessage', function(msg) {
         if(Date.now() - socket.request.session.date < sessionAge) {
-            console.log(socket.request.session.date)
             socket.request.session.date = Date.now()
+
+            let cipher = crypto.createCipher(algorithm, EDpassword)
+            let encrypted = cipher.update(msg, 'utf8', 'hex')
+            encrypted += cipher.final('hex')
+
             query = `INSERT INTO chat_log
                 VALUES (
                     ?,
@@ -242,7 +256,7 @@ io.on('connection', function(socket) {
                 [
                     socket.username,
                     socket.room,
-                    msg
+                    encrypted
                 ],
                 function(err) {
                     if (err) throw err;
@@ -343,6 +357,12 @@ io.on('connection', function(socket) {
                 roomId
             ],
             function(err, result) {
+                result.forEach(function (item, index) {
+                    let decipher = crypto.createDecipher(algorithm, EDpassword)
+                    let decrypted = decipher.update(item.message, 'hex', 'utf8')
+                    decrypted += decipher.final('utf8')
+                    result[index].message = decrypted
+                })
                 if (err) throw err;
                 socket.emit('setMessageHistory', result);
             }
@@ -355,6 +375,9 @@ io.on('connection', function(socket) {
         if (id == -1) {
             socket.emit('sendPrivateMessage', '', '', false);
         } else {
+            let cipher = crypto.createCipher(algorithm, EDpassword)
+            let encrypted = cipher.update(message, 'utf8', 'hex')
+            encrypted += cipher.final('hex')
             socket.emit('sendPrivateMessage', socket.username, message, true);
             io.to(id).emit('sendPrivateMessage', socket.username, message, true);
             query = `INSERT INTO chat_log
@@ -368,7 +391,7 @@ io.on('connection', function(socket) {
                 [
                     socket.username,
                     socket.room,
-                    message
+                    encrypted
                 ],
                 function(err) {
                     if (err) throw err;
