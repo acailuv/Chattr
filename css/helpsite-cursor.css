@@ -1,0 +1,11 @@
+.navbar-brand, .card-body, .form-control.form-control-lg.form-control-borderless {
+	cursor: url('cursors/033-text.png'), text;
+}
+
+body {
+	cursor: url('cursors/004-cursor.png'), pointer;
+}
+
+.btn.text-white, .card-body a, .btn.btn-lg.btn-success, .nav-link.text-white {
+	cursor: url('cursors/011-hand.png'), pointer;
+}
