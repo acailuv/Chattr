@@ -1,13 +1,21 @@
-.btn.btn-success, .btn.btn-primary, .btn.btn-warning, .btn.btn-danger, .close, .btn.btn-primary.fas.fa-comments, .btn.btn-primary.fa.fa-paperclip  {
-	cursor: url('cursors/011-hand.png'), pointer;
+:root {
+	--arrow: url('cursors/004-cursor.png');
+	--hand: url('cursors/011-hand.png');
+	--text: url('cursors/033-text.png');
+}
+
+
+.btn.btn-success, .btn.btn-primary, .btn.btn-warning, .btn.btn-danger, .close, 
+.btn.btn-primary.fas.fa-comments, .btn.btn-primary.fa.fa-paperclip  {
+	cursor: var(--hand), pointer;
 }
 
 .card-title, .form-control, .container.col-10.overflow-auto, .form-control.mb-3 {
-	cursor: url('cursors/033-text.png'), text;
+	cursor: var(--text), text;
 }
 
 .container.col-2.overflow-auto, .container-fluid, .messageForm.input-group.bg-dark, .empty , .boxWrapper{
-	cursor: url('cursors/004-cursor.png'), pointer;
+	cursor: var(--arrow), pointer;
 }
 
 .empty {
@@ -15,5 +23,5 @@
 }
 
 body {
-	cursor: url('cursors/004-cursor.png'), pointer;
+	cursor: var(--arrow), pointer;
 }

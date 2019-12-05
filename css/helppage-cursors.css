@@ -1,0 +1,17 @@
+:root {
+	--arrow: url('cursors/004-cursor.png');
+	--hand: url('cursors/011-hand.png');
+	--text: url('cursors/033-text.png');
+}
+
+.navbar-brand, body h1, p, .card-body {
+	cursor: var(--text),text;
+}
+
+.nav-link, .btn.text-white, .btn.btn-warning, .navbar-toggler-icon {
+	cursor: var(--hand), pointer;
+}
+
+body {
+	cursor: var(--arrow),pointer;
+}

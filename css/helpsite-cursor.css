@@ -1,11 +1,17 @@
+:root {
+	--arrow: url('cursors/004-cursor.png');
+	--hand: url('cursors/011-hand.png');
+	--text: url('cursors/033-text.png');
+}
+
 .navbar-brand, .card-body, .form-control.form-control-lg.form-control-borderless {
-	cursor: url('cursors/033-text.png'), text;
+	cursor: var(--text), text;
 }
 
 body {
-	cursor: url('cursors/004-cursor.png'), pointer;
+	cursor: var(--arrow), pointer;
 }
 
 .btn.text-white, .card-body a, .btn.btn-lg.btn-success, .nav-link.text-white {
-	cursor: url('cursors/011-hand.png'), pointer;
+	cursor: var(--hand), pointer;
 }

@@ -1,0 +1,30 @@
+:root {
+	--arrow: url('cursors/004-cursor.png');
+	--hand: url('cursors/011-hand.png');
+	--text: url('cursors/033-text.png');
+}
+
+body {
+	cursor: var(--arrow), pointer;
+}
+
+.h2.mb-0, .nav-link, .btn.btn-dark, .btn.btn-light, .btn.btn-success.mr-2.mb-2, 
+.btn.btn-primary.text-black , .btn.btn-primary.text-black, .btn.btn-primary, .close span, .wrapper,
+.smoothscroll, .mouse .mouse-icon, .owl-dots, .icon-menu.h3, .icon-close2.js-menu-toggle{
+	cursor: var(--hand), pointer;
+}
+
+
+
+.text-uppercase, .mb-5.desc, .text-light.mb-4, .section-title.mb-3, .p-3, .footer-heading.mb-4, .
+form-control.border-secondary.text-white.bg-transparent, body p, .modal-body label, .form-control  {
+	cursor: var(--text), text;
+}
+
+
+.wrapper {
+	width: 30px;
+}
+
+
+
