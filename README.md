@@ -14,6 +14,3 @@
 1. Open your preferred browser.
 2. Type in `localhost:3000` in the url text bar and hit enter.
 3. Done. You are connected to Chattr. Feel free to explore this simple application.
-
-## Disclaimer
-> THIS APPLICATION IS A WORK IN PROGRESS!
